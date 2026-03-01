@@ -46,6 +46,8 @@ object SoTerm: ClientModInitializer {
 
 
     override fun onInitializeClient() {
+        DataDownloader.downloadData()
+        
         EventDispatcher.init()
         ThreadUtils.init()
         DungeonListener.init()
