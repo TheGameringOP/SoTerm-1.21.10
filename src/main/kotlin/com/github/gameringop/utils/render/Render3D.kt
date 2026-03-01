@@ -66,7 +66,7 @@ object Render3D {
 
         if (fill) ShapeRenderer.addChainedFilledBoxVertices(
             mstack,
-            consumers.getBuffer(if (phase) NoammRenderLayers.FILLED_THROUGH_WALLS else NoammRenderLayers.FILLED),
+            consumers.getBuffer(if (phase) RenderLayers.FILLED_THROUGH_WALLS else RenderLayers.FILLED),
             x1, y1, z1,
             x2, y2, z2,
             fillR, fillG, fillB, fillA
@@ -75,8 +75,8 @@ object Render3D {
         if (outline) ShapeRenderer.renderLineBox(
             mstack.last(),
             consumers.getBuffer(
-                if (phase) NoammRenderLayers.getLinesThroughWalls(adjustedLineWidth)
-                else NoammRenderLayers.getLines(
+                if (phase) RenderLayers.getLinesThroughWalls(adjustedLineWidth)
+                else RenderLayers.getLines(
                     adjustedLineWidth
                 )
             ),
