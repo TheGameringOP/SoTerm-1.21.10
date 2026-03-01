@@ -13,7 +13,7 @@ import com.github.gameringop.utils.ColorUtils.withAlpha
 import com.github.gameringop.utils.MathUtils.add
 import com.github.gameringop.utils.NumbersUtils.toFixed
 import com.github.gameringop.utils.location.LocationUtils
-import com.github.gameringop.utils.render.NoammRenderLayers
+import com.github.gameringop.utils.render.RenderLayers
 import com.github.gameringop.utils.render.Render2D
 import com.github.gameringop.utils.render.Render3D
 import com.github.gameringop.utils.render.RenderContext
@@ -182,7 +182,7 @@ object WitherDragons: Feature(
 
         ShapeRenderer.renderLineBox(
             mstack.last(),
-            consumers.getBuffer(NoammRenderLayers.getLines(2.0)),
+            consumers.getBuffer(RenderLayers.getLines(2.0)),
             aabb,
             color.red / 255f, color.green / 255f, color.blue / 255f, 1f
         )
