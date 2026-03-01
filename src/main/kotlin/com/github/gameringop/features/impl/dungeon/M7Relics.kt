@@ -35,7 +35,6 @@ object M7Relics: Feature(name = "M7 Relics", description = "A bunch of M7 Relics
     private val relicTimer by ToggleSetting("Place Timer").withDescription("Sends in chat the time it took to place the relic after you picked it up.")
     private val blockWrongRelic by ToggleSetting("Block Wrong Relic").withDescription("Prevents you from placing your relic at the wrong cauldron.")
 
-    private val relicAura by ToggleSetting("Relic Aura").withDescription("Automatically pick up the relic when it spawns.")
     private var lastClick = System.currentTimeMillis()
 
     private val relicPickUpRegex = Regex("^(\\w{3,16}) picked the Corrupted (\\w{3,6}) Relic!$")
@@ -161,7 +160,6 @@ object M7Relics: Feature(name = "M7 Relics", description = "A bunch of M7 Relics
         }
 
         register<TickEvent.Start> {
-            if (! relicAura.value) return@register
             if (LocationUtils.F7Phase != 5) return@register
             if (System.currentTimeMillis() - lastClick < 200) return@register
             if (mc.player !!.inventory.getItem(8).displayName.string.contains("Relic")) return@register
