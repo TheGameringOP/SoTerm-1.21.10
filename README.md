@@ -3,10 +3,9 @@
 [![GitHub Downloads](https://img.shields.io/badge/DOWNLOADS-1-brightgreen?style=for-the-badge&logo=github)](https://github.com/TheGameringOP/SoTerm-1.21.10/releases)
 [![Discord](https://img.shields.io/discord/489529070913060867?color=5865F2&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/hypixel)
 
-> 1.21.10 port of the greatest skyblock mod ever!
+> 1.21.10 port of the greatest skyblock mod ever!>
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5388b1cb-655a-4daf-a4db-a410b186d8f3" />
-
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/1fe623d5-aba1-4bd3-8485-ef97d113f83b" />
 
 ⚠️ This project is still a work in progress.  
 
