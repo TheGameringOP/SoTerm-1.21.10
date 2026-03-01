@@ -11,7 +11,7 @@ import com.github.gameringop.features.impl.dungeon.solvers.puzzles.PuzzleSolvers
 import com.github.gameringop.utils.ThreadUtils
 import com.github.gameringop.utils.Utils.equalsOneOf
 import com.github.gameringop.utils.dungeons.map.core.RoomState
-import com.github.gameringop.utils.render.NoammRenderLayers
+import com.github.gameringop.utils.render.RenderLayers
 import com.github.gameringop.utils.render.RenderContext
 import com.github.gameringop.utils.world.WorldUtils
 import net.minecraft.client.renderer.ShapeRenderer
@@ -238,7 +238,7 @@ object TicTacToeSolver {
 
         ShapeRenderer.addChainedFilledBoxVertices(
             matrices,
-            consumers.getBuffer(NoammRenderLayers.FILLED_THROUGH_WALLS),
+            consumers.getBuffer(RenderLayers.FILLED_THROUGH_WALLS),
             minX, minY, minZ,
             maxX, maxY, maxZ,
             color.red / 255f, color.green / 255f, color.blue / 255f, 0.7f
