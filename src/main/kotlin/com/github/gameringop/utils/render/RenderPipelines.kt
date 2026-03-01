@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.resources.ResourceLocation
 
-object NoammRenderPipelines {
+object RenderPipelines {
     val LINES_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
         RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
             .withLocation(id("lines_through_walls"))
