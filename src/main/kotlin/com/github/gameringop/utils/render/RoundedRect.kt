@@ -52,7 +52,7 @@ class RoundedRect(buffers: MultiBufferSource.BufferSource): PictureInPictureRend
                 .putVec2(0f, 1f).putFloat(state.edgeSoftness * s).putFloat(state.shadow * s)
         }
 
-        val vBuf = NoammRenderPipelines.ROUND_RECT.vertexFormat.uploadImmediateVertexBuffer(mesh.vertexBuffer())
+        val vBuf = RenderPipelines.ROUND_RECT.vertexFormat.uploadImmediateVertexBuffer(mesh.vertexBuffer())
         val idx = RenderSystem.getSequentialBuffer(mesh.drawState().mode())
 
         mesh.use {
@@ -62,7 +62,7 @@ class RoundedRect(buffers: MultiBufferSource.BufferSource): PictureInPictureRend
                 OptionalInt.empty(), if (target.useDepth) RenderSystem.outputDepthTextureOverride ?: target.depthTextureView else null,
                 OptionalDouble.empty()
             ).use { pass ->
-                pass.setPipeline(NoammRenderPipelines.ROUND_RECT)
+                pass.setPipeline(RenderPipelines.ROUND_RECT)
                 RenderSystem.bindDefaultUniforms(pass)
                 pass.setUniform("DynamicTransforms", dynamicTransforms)
                 pass.setUniform("u", ubo)
