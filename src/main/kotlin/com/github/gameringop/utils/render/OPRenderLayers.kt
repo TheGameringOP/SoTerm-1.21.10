@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.RenderType.CompositeState
 import java.util.OptionalDouble
 import java.util.function.DoubleFunction
 
-object RenderLayers {
+object OPRenderLayers {
     private val linesThroughWallsLayers: Double2ObjectMap<RenderType.CompositeRenderType> = Double2ObjectOpenHashMap()
     private val linesLayers: Double2ObjectMap<RenderType.CompositeRenderType> = Double2ObjectOpenHashMap()
 
@@ -18,7 +18,7 @@ object RenderLayers {
         RenderType.create(
             "lines_through_walls",
             RenderType.TRANSIENT_BUFFER_SIZE, false, false,
-            RenderPipelines.LINES_THROUGH_WALLS,
+            OPRenderPipelines.LINES_THROUGH_WALLS,
             CompositeState.builder()
                 .setLineState(RenderStateShard.LineStateShard(OptionalDouble.of(width)))
                 .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
@@ -49,7 +49,7 @@ object RenderLayers {
 
     val FILLED_THROUGH_WALLS: RenderType.CompositeRenderType = RenderType.create(
         "filled_through_walls", RenderType.TRANSIENT_BUFFER_SIZE, false, true,
-        RenderPipelines.FILLED_THROUGH_WALLS,
+        OPRenderPipelines.FILLED_THROUGH_WALLS,
         CompositeState.builder()
             .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
             .createCompositeState(false)
