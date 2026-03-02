@@ -30,31 +30,31 @@ import kotlin.math.abs
 import kotlin.math.floor
 
 object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
-    val scale by SliderSetting("Custom Menu's Scale", 1f, 0.1f, 2f, 0.01f).section("General")
+    val scale by SliderSetting("Custom Menu's Scale", 0.66f, 0.1f, 2f, 0.01f).section("General")
     val slotStyle by DropdownSetting("Slot Style", 0, listOf("Rect", "Bordered-Rect", "Button"))
     val mode by DropdownSetting("Mode", 0, listOf("Normal", "Q-Terms"))
     val resyncTimeout by SliderSetting<Long>("Resync Timeout", 800, 600, 1000, 1)
 
-    val backgroundColor by ColorSetting("Background Color", Color(0, 0, 0, 100)).section("Settings - UI")
+    val backgroundColor by ColorSetting("Background Color", Color(0, 0, 0, 127)).section("Settings - UI")
     val borderColor by ColorSetting("Border Color", Color(255, 255, 255))
     val titleColor by ColorSetting("Title Text Color", Color.WHITE)
     val overlayTextColor by ColorSetting("Overlay Text Color", Color.WHITE)
     val queueString by ToggleSetting("Queue: Shows Number").showIf { mode.value == 1 }
     val queueColor by ColorSetting("Queue Text Color", Color.CYAN).showIf { queueString.value && mode.value == 1 }
     
-    val solutionColor by ColorSetting("Generic Solution", Color(0, 255, 0, 130)).section("Colors - Terminals").showIf {
+    val solutionColor by ColorSetting("Generic Solution", Color(0, 255, 0, 255)).section("Colors - Terminals").showIf {
         melody.value || numbers.value || rubix.value || colors.value || startwith.value || redgreen.value
     }
 
     val numbersNumbers by ToggleSetting("Numbers: Show Numbers").showIf { numbers.value }
-    val numbersFirstColor by ColorSetting("Numbers: 1st Click", Color(0, 255, 0, 130)).showIf { numbers.value }
-    val numbersSecondColor by ColorSetting("Numbers: 2nd Click", Color(0, 200, 0, 130)).showIf { numbers.value }
-    val numbersThirdColor by ColorSetting("Numbers: 3rd Click", Color(0, 150, 0, 130)).showIf { numbers.value }
-    val rubixPositiveColor by ColorSetting("Rubix: Positive (+)", Color(0, 114, 255, 130)).showIf { rubix.value }
-    val rubixNegativeColor by ColorSetting("Rubix: Negative (-)", Color(205, 0, 0, 130)).showIf { rubix.value }
-    val melodyColumnColor by ColorSetting("Melody: Column", Color(255, 0, 255, 130)).showIf { melody.value }
-    val melodyIndicatorColor by ColorSetting("Melody: Indicator", Color(255, 116, 0, 130)).showIf { melody.value }
-    val melodyWrongColor by ColorSetting("Melody: Wrong", Color(255, 0, 0, 130)).showIf { melody.value }
+    val numbersFirstColor by ColorSetting("Numbers: 1st Click", Color(0, 255, 0, 255)).showIf { numbers.value }
+    val numbersSecondColor by ColorSetting("Numbers: 2nd Click", Color(0, 255, 0, 155)).showIf { numbers.value }
+    val numbersThirdColor by ColorSetting("Numbers: 3rd Click", Color(0, 255, 0, 55)).showIf { numbers.value }
+    val rubixPositiveColor by ColorSetting("Rubix: Positive (+)", Color(0, 255, 00, 255)).showIf { rubix.value }
+    val rubixNegativeColor by ColorSetting("Rubix: Negative (-)", Color(205, 0, 0, 255)).showIf { rubix.value }
+    val melodyColumnColor by ColorSetting("Melody: Column", Color(255, 0, 255, 127)).showIf { melody.value }
+    val melodyIndicatorColor by ColorSetting("Melody: Indicator", Color(00, 255, 0, 255)).showIf { melody.value }
+    val melodyWrongColor by ColorSetting("Melody: Wrong", Color(255, 0, 0, 255)).showIf { melody.value }
 
     val melody by ToggleSetting("Melody", true).section("Toggles")
     val numbers by ToggleSetting("Numbers", true)
