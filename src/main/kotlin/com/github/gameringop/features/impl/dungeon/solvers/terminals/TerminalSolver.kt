@@ -222,7 +222,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
                 }
 
                 TerminalListener.currentType == TerminalType.MELODY -> {
-                    if (TerminalType.melodyCurrent == TerminalType.melodyCorrect && melodyBlock) return@register
+                    if (TerminalType.melodyCurrent == TerminalType.melodyCorrect && melodyBlock.value) return@register
                     if (slot.equalsOneOf(16, 25, 34, 43)) sendClickPacket(slot, 0)
                     return@register
                 }
