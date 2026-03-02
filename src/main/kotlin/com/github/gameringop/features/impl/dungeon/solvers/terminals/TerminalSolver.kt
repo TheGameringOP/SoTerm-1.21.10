@@ -222,7 +222,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
                 }
 
                 TerminalListener.currentType == TerminalType.MELODY -> {
-                    if (SoTerm.debugFlags.contains("melody")) ChatUtils.modMessage("Current: " + TerminalType.melodyCurrent + " |  Correct: " + $TerminalType.melodyCorrect")
+                    if (SoTerm.debugFlags.contains("melody")) ChatUtils.modMessage("Current: ${TerminalType.melodyCurrent} | Correct: ${TerminalType.melodyCorrect}")
                     if (melodyBlock.value && TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) return@register
                     if (slot.equalsOneOf(16, 25, 34, 43)) sendClickPacket(slot, 0)
                     return@register
