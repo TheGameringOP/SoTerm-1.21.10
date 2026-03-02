@@ -1,6 +1,6 @@
 package com.github.gameringop.features.impl.dungeon.solvers.terminals
 
-import com.github.gameringop.SoTerms
+import com.github.gameringop.SoTerm
 import com.github.gameringop.event.impl.ContainerEvent
 import com.github.gameringop.event.impl.ScreenEvent
 import com.github.gameringop.features.Feature
@@ -277,7 +277,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
         Scheduler.schedule(resyncTimeout.value.toInt(), resyncTimeout.value.toInt() / 50) {
             if (! TerminalListener.inTerm || initialWindowId != TerminalListener.lastWindowId) return@schedule
 
-            if (SoTerms.debugFlags.contains("terminal")) {
+            if (SoTerm.debugFlags.contains("terminal")) {
                 ChatUtils.modMessage("Resync Timeout Triggered")
             }
 
@@ -305,7 +305,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
             mc.player
         )
 
-        if (SoTerms.debugFlags.contains("terminal")) {
+        if (SoTerm.debugFlags.contains("terminal")) {
             ChatUtils.modMessage("Clicked $slot on ${TerminalListener.currentType?.name}")
         }
 
