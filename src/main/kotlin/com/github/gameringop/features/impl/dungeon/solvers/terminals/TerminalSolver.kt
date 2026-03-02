@@ -224,10 +224,16 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
 
                 TerminalListener.currentType == TerminalType.MELODY -> {
                     if (SoTerm.debugFlags.contains("melody") && slot == melodyRow && slot.equalsOneOf(16, 25, 34, 43)) ChatUtils.modMessage("Row: ${(melodyRow+2)/9-1} | Current: ${TerminalType.melodyCurrent} | Correct: ${TerminalType.melodyCorrect}")
-                    if (melodyBlock.value && TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) return@register
-                    if (slot.equalsOneOf(16, 25, 34, 43) && slot == melodyRow) {
+                    if (melodyBlock.value) {
+                        if (TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) return@register
+                        if (slot.equalsOneOf(16, 25, 34, 43) && slot == melodyRow) {
+                            sendClickPacket(slot, 0)
+                            melodyRow += 9
+                        }
+                    }
+                    else if (slot.equalsOneOf(16, 25, 34, 43)) {
                         sendClickPacket(slot, 0)
-                        melodyRow += 9
+                        if (TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) melodyRow += 9
                     }
                     return@register
                 }
