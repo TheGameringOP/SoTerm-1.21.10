@@ -67,6 +67,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val solution = mutableListOf<TerminalClick>()
     private val queue = mutableListOf<TerminalClick>()
     private var isClicked = false
+    private var melodyRow = 16
 
     override fun onEnable() {
         super.onEnable()
@@ -224,7 +225,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
                 TerminalListener.currentType == TerminalType.MELODY -> {
                     if (SoTerm.debugFlags.contains("melody")) ChatUtils.modMessage("Current: ${TerminalType.melodyCurrent} | Correct: ${TerminalType.melodyCorrect}")
                     if (melodyBlock.value && TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) return@register
-                    if (slot.equalsOneOf(16, 25, 34, 43)) sendClickPacket(slot, 0)
+                    if (slot.equalsOneOf(16, 25, 34, 43) && slot == melodyRow) { sendClickPacket(slot, 0) melodyRow += 9 }
                     return@register
                 }
 
@@ -425,11 +426,15 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
         }
     }
 
-    fun onTerminalOpen() = ::isClicked.set(false)
+    fun onTerminalOpen() {
+        ::isClicked.set(false)
+        melodyRow = 16
+    }
 
     fun onTerminalClose() {
         queue.clear()
         solution.clear()
+        melodyRow = 16
     }
 
     fun register() {
