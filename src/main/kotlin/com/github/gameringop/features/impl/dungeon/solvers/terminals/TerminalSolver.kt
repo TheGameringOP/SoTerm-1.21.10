@@ -40,7 +40,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val titleColor by ColorSetting("Title Text Color", Color.WHITE)
     val overlayTextColor by ColorSetting("Overlay Text Color", Color.WHITE)
     val queueString by ToggleSetting("Queue: Shows Number").showIf { mode.value == 1 }
-    val queueColor by ColorSetting("Queue Text Color", Color.CYAN) { mode.value == 1 }
+    val queueColor by ColorSetting("Queue Text Color", Color.CYAN).showIf { mode.value == 1 }
     
     val solutionColor by ColorSetting("Generic Solution", Color(0, 255, 0, 130)).section("Colors - Terminals").showIf {
         melody.value || numbers.value || rubix.value || colors.value || startwith.value || redgreen.value
