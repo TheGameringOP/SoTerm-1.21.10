@@ -50,7 +50,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val numbersFirstColor by ColorSetting("Numbers: 1st Click", Color(0, 255, 0, 255)).showIf { numbers.value }
     val numbersSecondColor by ColorSetting("Numbers: 2nd Click", Color(0, 255, 0, 155)).showIf { numbers.value }
     val numbersThirdColor by ColorSetting("Numbers: 3rd Click", Color(0, 255, 0, 55)).showIf { numbers.value }
-    val rubixPositiveColor by ColorSetting("Rubix: Positive (+)", Color(0, 255, 00, 255)).showIf { rubix.value }
+    val rubixPositiveColor by ColorSetting("Rubix: Positive (+)", Color(0, 255, 0, 255)).showIf { rubix.value }
     val rubixNegativeColor by ColorSetting("Rubix: Negative (-)", Color(205, 0, 0, 255)).showIf { rubix.value }
     val melodyColumnColor by ColorSetting("Melody: Column", Color(255, 0, 255, 127)).showIf { melody.value }
     val melodyIndicatorColor by ColorSetting("Melody: Indicator", Color(0, 255, 0, 255)).showIf { melody.value }
@@ -222,7 +222,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
                 }
 
                 TerminalListener.currentType == TerminalType.MELODY -> {
-                    if (TerminalType.melodyCurrent == TerminalType.melodyCorrect && melodyBlock.value) return@register
+                    if (melodyBlock.value && TerminalType.melodyCurrent != null && TerminalType.melodyCorrect != null && TerminalType.melodyCurrent != TerminalType.melodyCorrect) return@register
                     if (slot.equalsOneOf(16, 25, 34, 43)) sendClickPacket(slot, 0)
                     return@register
                 }
