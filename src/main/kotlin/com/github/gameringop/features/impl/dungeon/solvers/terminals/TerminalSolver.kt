@@ -39,7 +39,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val borderColor by ColorSetting("Border Color", Color(255, 255, 255))
     val titleColor by ColorSetting("Title Text Color", Color.WHITE)
     val overlayTextColor by ColorSetting("Overlay Text Color", Color.WHITE)
-    val queueString by ToggleSetting("Queue: Shows Number").showIf { mode.value == 1 }
+    val queueString by ToggleSetting("Show Queue").showIf { mode.value == 1 }
     val queueColor by ColorSetting("Queue Text Color", Color.CYAN).showIf { queueString.value && mode.value == 1 }
     
     val solutionColor by ColorSetting("Generic Solution", Color(0, 255, 0, 255)).section("Colors - Terminals").showIf {
@@ -55,6 +55,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val melodyColumnColor by ColorSetting("Melody: Column", Color(255, 0, 255, 127)).showIf { melody.value }
     val melodyIndicatorColor by ColorSetting("Melody: Indicator", Color(00, 255, 0, 255)).showIf { melody.value }
     val melodyWrongColor by ColorSetting("Melody: Wrong", Color(255, 0, 0, 255)).showIf { melody.value }
+    val melodyBlock by ToggleSetting("Melody: Block Wrong Click").showIf { melody.value }
 
     val melody by ToggleSetting("Melody", true).section("Toggles")
     val numbers by ToggleSetting("Numbers", true)
@@ -221,6 +222,7 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
                 }
 
                 TerminalListener.currentType == TerminalType.MELODY -> {
+                    if (current.value == correct.value && melodyBlock.value) return@register
                     if (slot.equalsOneOf(16, 25, 34, 43)) sendClickPacket(slot, 0)
                     return@register
                 }
