@@ -67,7 +67,9 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
     val solution = mutableListOf<TerminalClick>()
     private val queue = mutableListOf<TerminalClick>()
     private var isClicked = false
-    private val clickCooldowns = mutableMapOf<Int, Long>()
+    private var waitingForLimeMove = false
+    private var lastLimeSlot = -1
+    private var currentRowSlots = listOf(16, 25, 34, 43)
 
     override fun onEnable() {
         super.onEnable()
@@ -239,100 +241,80 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
 
     private fun handleMelodyClick(slot: Int) {
         val melodyState = TerminalType.melodyState
-        val currentTime = System.currentTimeMillis()
         
-        if (currentTime - (clickCooldowns[slot] ?: 0) < 150) {
+        if (waitingForLimeMove) {
             if (SoTerm.debugFlags.contains("melody")) {
-                ChatUtils.modMessage("Click cooldown for slot $slot")
+                ChatUtils.modMessage("Waiting for lime glass to move, blocking click")
             }
             return
         }
         
-        val melodyRows = listOf(16, 25, 34, 43)
-        
-        if (slot in melodyRows) {
-            val clickedRowIndex = melodyRows.indexOf(slot)
+        if (slot in currentRowSlots) {
+            val current = TerminalType.melodyState.current
+            val correct = TerminalType.melodyState.correct
+            
+            if (current != null && correct != null && current != correct) {
+                if (SoTerm.debugFlags.contains("melody")) {
+                    ChatUtils.modMessage("Wrong column, blocking click")
+                }
+                return
+            }
+            
+            val clickedRowIndex = currentRowSlots.indexOf(slot)
+            val expectedRowIndex = (melodyState.expectedNextRow - 16) / 9
+            
+            if (clickedRowIndex != expectedRowIndex) {
+                if (SoTerm.debugFlags.contains("melody")) {
+                    ChatUtils.modMessage("Wrong row, blocking click")
+                }
+                return
+            }
+            
+            sendClickPacket(slot, 0)
+            
+            lastLimeSlot = slot
+            waitingForLimeMove = true
+            melodyState.expectedNextRow += 9
             
             if (SoTerm.debugFlags.contains("melody")) {
-                ChatUtils.modMessage("Clicked row $clickedRowIndex (slot $slot) | Expected: ${melodyState.expectedNextRow}")
+                ChatUtils.modMessage("Clicked row $clickedRowIndex, waiting for lime glass to move")
             }
-            
-            if (melodyBlock.value) {
-                val current = TerminalType.melodyState.current
-                val correct = TerminalType.melodyState.correct
-                
-                if (current == null || correct == null) {
-                    val expectedRowIndex = (melodyState.expectedNextRow - 16) / 9
-                    
-                    if (clickedRowIndex == expectedRowIndex) {
-                        clickCooldowns[slot] = currentTime
-                        sendClickPacket(slot, 0)
-                        
-                        melodyState.expectedNextRow += 9
-                        melodyState.lastClickTime = currentTime
-                        melodyState.clickHistory.add(clickedRowIndex)
-                        
-                        if (SoTerm.debugFlags.contains("melody")) {
-                            ChatUtils.modMessage("Clicked expected row $clickedRowIndex (position-based), next expected: ${melodyState.expectedNextRow}")
-                        }
-                    } else {
-                        if (SoTerm.debugFlags.contains("melody")) {
-                            ChatUtils.modMessage("Blocked click - wrong row (position-based)")
-                        }
-                    }
-                    return
-                }
-                
-                if (current != correct) {
-                    if (SoTerm.debugFlags.contains("melody")) {
-                        ChatUtils.modMessage("Blocked click - wrong column (current: $current, correct: $correct)")
-                    }
-                    return
-                }
-                
-                val expectedRowIndex = (melodyState.expectedNextRow - 16) / 9
-                
-                if (clickedRowIndex == expectedRowIndex) {
-                    clickCooldowns[slot] = currentTime
-                    sendClickPacket(slot, 0)
-                    
-                    melodyState.expectedNextRow += 9
-                    melodyState.lastClickTime = currentTime
-                    melodyState.clickHistory.add(clickedRowIndex)
-                    
-                    if (SoTerm.debugFlags.contains("melody")) {
-                        ChatUtils.modMessage("Clicked expected row $clickedRowIndex, next expected: ${melodyState.expectedNextRow}")
-                    }
-                } else {
-                    if (currentTime - melodyState.lastClickTime > 300) {
-                        if (SoTerm.debugFlags.contains("melody")) {
-                            ChatUtils.modMessage("Possible desync - clicked $clickedRowIndex but expected $expectedRowIndex")
-                        }
-                        
-                        val lastClicked = melodyState.clickHistory.lastOrNull()
-                        if (lastClicked != null && clickedRowIndex == lastClicked + 1) {
-                            melodyState.expectedNextRow = slot + 9
-                            clickCooldowns[slot] = currentTime
-                            sendClickPacket(slot, 0)
-                            melodyState.clickHistory.add(clickedRowIndex)
-                            melodyState.lastClickTime = currentTime
-                            
-                            if (SoTerm.debugFlags.contains("melody")) {
-                                ChatUtils.modMessage("Recovered from desync, new expected: ${melodyState.expectedNextRow}")
-                            }
-                        }
-                    }
-                }
-            } else {
-                clickCooldowns[slot] = currentTime
-                sendClickPacket(slot, 0)
-                
-                if (TerminalType.melodyState.current != null && TerminalType.melodyState.correct != null) {
-                    if (TerminalType.melodyState.current != TerminalType.melodyState.correct) {
-                        melodyState.expectedNextRow += 9
-                    }
+        }
+    }
+
+    override fun onItemsUpdated(slot: Int, item: ItemStack) {
+        solve(slot, item)
+        
+        if (TerminalListener.currentType == TerminalType.MELODY && waitingForLimeMove) {
+            if (item.item == Items.LIME_STAINED_GLASS_PANE && slot != lastLimeSlot) {
+                waitingForLimeMove = false
+                if (SoTerm.debugFlags.contains("melody")) {
+                    ChatUtils.modMessage("Lime glass moved from $lastLimeSlot to $slot, clicks re-enabled")
                 }
             }
+        }
+        
+        if (mode.value == 1 && queue.isNotEmpty() && enabled) {
+            val nextClick = queue[0]
+
+            val isValid = when (TerminalListener.currentType) {
+                TerminalType.NUMBERS -> {
+                    val firstSol = solution.firstOrNull()
+                    firstSol != null && firstSol.slotId == nextClick.slotId
+                }
+
+                TerminalType.RUBIX -> {
+                    val sol = solution.find { it.slotId == nextClick.slotId }
+                    sol != null && ((sol.btn > 0 && nextClick.btn == 0) || (sol.btn < 0 && nextClick.btn == 1))
+                }
+
+                else -> solution.any { it.slotId == nextClick.slotId }
+            }
+
+            if (isValid) {
+                queue.forEach(::predict)
+                click(queue.removeAt(0))
+            } else queue.clear()
         }
     }
 
@@ -497,60 +479,19 @@ object TerminalSolver: Feature("Renders solutions for Floor 7 terminals.") {
         }
     }
 
-    fun onItemsUpdated(slot: Int = 0, item: ItemStack = ItemStack.EMPTY) {
-        solve(slot, item)
-        
-        if (TerminalListener.currentType == TerminalType.MELODY) {
-            val melodyState = TerminalType.melodyState
-            val current = melodyState.current
-            val correct = melodyState.correct
-            val button = melodyState.button
-            
-            if (current != null && correct != null && button != null) {
-                if (current == correct) {
-                    melodyState.needsResync = false
-                } else {
-                    if (System.currentTimeMillis() - melodyState.lastClickTime > 500) {
-                        melodyState.needsResync = true
-                    }
-                }
-            }
-        }
-        
-        if (mode.value == 1 && queue.isNotEmpty() && enabled) {
-            val nextClick = queue[0]
-
-            val isValid = when (TerminalListener.currentType) {
-                TerminalType.NUMBERS -> {
-                    val firstSol = solution.firstOrNull()
-                    firstSol != null && firstSol.slotId == nextClick.slotId
-                }
-
-                TerminalType.RUBIX -> {
-                    val sol = solution.find { it.slotId == nextClick.slotId }
-                    sol != null && ((sol.btn > 0 && nextClick.btn == 0) || (sol.btn < 0 && nextClick.btn == 1))
-                }
-
-                else -> solution.any { it.slotId == nextClick.slotId }
-            }
-
-            if (isValid) {
-                queue.forEach(::predict)
-                click(queue.removeAt(0))
-            } else queue.clear()
-        }
-    }
-
     fun onTerminalOpen() {
         isClicked = false
         TerminalType.reset()
+        waitingForLimeMove = false
+        lastLimeSlot = -1
     }
 
     fun onTerminalClose() {
         queue.clear()
         solution.clear()
-        clickCooldowns.clear()
         TerminalType.reset()
+        waitingForLimeMove = false
+        lastLimeSlot = -1
     }
 
     fun register() {
