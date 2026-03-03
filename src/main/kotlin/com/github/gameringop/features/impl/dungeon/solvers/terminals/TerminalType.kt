@@ -1,6 +1,7 @@
 package com.github.gameringop.features.impl.dungeon.solvers.terminals
 
 import net.minecraft.world.item.Items
+import java.util.concurrent.ConcurrentLinkedQueue
 
 enum class TerminalType(val slotCount: Int) {
     COLORS(54), MELODY(54), NUMBERS(36), REDGREEN(45), RUBIX(45), STARTWITH(45);
@@ -37,9 +38,17 @@ enum class TerminalType(val slotCount: Int) {
 
         var lastRubixTarget: Int? = null
 
-        var melodyButton: Int? = null
-        var melodyCurrent: Int? = null
-        var melodyCorrect: Int? = null
+        data class MelodyState(
+            var button: Int? = null,
+            var current: Int? = null,
+            var correct: Int? = null,
+            var expectedNextRow: Int = 16,
+            var lastClickTime: Long = 0,
+            var clickHistory: ConcurrentLinkedQueue<Int> = ConcurrentLinkedQueue(),
+            var needsResync: Boolean = false
+        )
+        
+        val melodyState = MelodyState()
 
         val numbersSlotCounts = mutableMapOf<Int, Int>()
 
@@ -55,11 +64,16 @@ enum class TerminalType(val slotCount: Int) {
 
         fun reset() {
             lastRubixTarget = null
-            melodyButton = null
-            melodyCurrent = null
-            melodyCorrect = null
             numbersSlotCounts.clear()
             clickedStartWithSlots.clear()
+            
+            melodyState.button = null
+            melodyState.current = null
+            melodyState.correct = null
+            melodyState.expectedNextRow = 16
+            melodyState.lastClickTime = 0
+            melodyState.clickHistory.clear()
+            melodyState.needsResync = false
         }
     }
 }
