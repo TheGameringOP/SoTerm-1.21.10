@@ -9,4 +9,4 @@ import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.world.level.Level
 import org.joml.Matrix4f
 
-class RenderWorldEvent(val ctx: RenderContext, val partialTicks: Float): Event(cancelable = false)
+class RenderWorldEvent(val ctx: RenderContext): Event(cancelable = false)
