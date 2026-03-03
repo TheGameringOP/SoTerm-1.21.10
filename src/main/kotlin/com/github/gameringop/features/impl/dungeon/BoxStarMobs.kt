@@ -83,28 +83,27 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
 			for (id in starMobs) {
 				val entity = mc.level?.getEntity(id) ?: continue
 				if (!entity.isAlive) continue
-
-				val bb = entity.boundingBox
-				val width = bb.xsize
-				val height = bb.ysize
-				val centerX = (bb.minX + bb.maxX) / 2.0
-				val centerZ = (bb.minZ + bb.maxZ) / 2.0
-				val baseY = bb.minY
-
-				val color = getColor(entity) ?: starMobColor.value
-
+				val partial = event.partialTicks
+				
+				val interpX = entity.xOld + (entity.x - entity.xOld) * partial
+				val interpY = entity.yOld + (entity.y - entity.yOld) * partial
+				val interpZ = entity.zOld + (entity.z - entity.zOld) * partial
+				
+				val width = entity.boundingBox.xsize
+				val height = entity.boundingBox.ysize
+				
 				Render3D.renderBox(
-					event.ctx,
-					centerX,
-					baseY,
-					centerZ,
-					width,
-					height,
-					outlineColor = color,
-					fillColor = color.withAlpha(50),
-                    outline = mode.value.equalsOneOf(1, 2),
-                    fill = mode.value.equalsOneOf(0, 2),
-					phase = esp.value
+				    event.ctx,
+				    interpX,
+				    interpY,
+				    interpZ,
+				    width,
+				    height,
+				    outlineColor = color,
+				    fillColor = color.withAlpha(50),
+				    outline = mode.value.equalsOneOf(1, 2),
+				    fill = mode.value.equalsOneOf(0, 2),
+				    phase = esp.value
 				)
 			}
 		}
