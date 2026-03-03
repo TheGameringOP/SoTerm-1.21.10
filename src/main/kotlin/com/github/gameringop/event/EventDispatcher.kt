@@ -39,8 +39,7 @@ object EventDispatcher {
 
     fun init() {
         WorldRenderEvents.END_MAIN.register { context ->
-            val renderCtx = RenderContext.fromContext(context, context.tickDelta)
-            EventBus.post(RenderWorldEvent(renderCtx))
+            EventBus.post(RenderWorldEvent(RenderContext.fromContext(context),context.tickDelta))
         }
 
         ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
