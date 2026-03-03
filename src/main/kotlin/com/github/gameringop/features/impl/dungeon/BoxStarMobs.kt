@@ -19,6 +19,7 @@ import com.github.gameringop.utils.location.LocationUtils
 import com.github.gameringop.utils.location.LocationUtils.dungeonFloorNumber
 import com.github.gameringop.utils.location.LocationUtils.inBoss
 import com.github.gameringop.utils.render.Render3D
+import com.github.gameringop.utils.render.RenderHelper // Add this import
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EquipmentSlot
@@ -42,7 +43,6 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
     private val starMobColor by ColorSetting("Star Mob Color", Color.GREEN, false).section("General Colors").withDescription("Default color for all Starred mobs.")
     private val batColor by ColorSetting("Bat Color", Color.GREEN, false).withDescription("The color used for highlighted bats.")
     private val felColor by ColorSetting("Fel Color", Color.GREEN, false).withDescription("The color used for fels.")
-
 
     override fun init() {
         register<MainThreadPacketReceivedEvent.Post> {
@@ -74,7 +74,6 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
             checked.clear()
         }
 
-
         register<RenderWorldEvent> {
 			if (!LocationUtils.inDungeon || inBoss) return@register
 			if (starMobs.isEmpty()) return@register
@@ -83,22 +82,13 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
 				val entity = mc.level?.getEntity(id) ?: continue
 				if (!entity.isAlive) continue
 
-				val bb = entity.boundingBox
-				val width = bb.xsize
-				val height = bb.ysize
-				val centerX = (bb.minX + bb.maxX) / 2.0
-				val centerZ = (bb.minZ + bb.maxZ) / 2.0
-				val baseY = bb.minY
-
+                val renderBB = entity.renderBoundingBox
+                
 				val color = getColor(entity) ?: starMobColor.value
 
 				Render3D.renderBox(
 					event.ctx,
-					centerX,
-					baseY,
-					centerZ,
-					width,
-					height,
+					renderBB,
 					outlineColor = color,
 					fillColor = color.withAlpha(50),
                     outline = mode.value.equalsOneOf(1, 2),
@@ -107,6 +97,30 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
 				)
 			}
 		}
+    }
+
+    private fun Render3D.Companion.renderBox(
+        ctx: RenderContext,
+        bb: net.minecraft.world.phys.AABB,
+        outlineColor: Color,
+        fillColor: Color,
+        outline: Boolean,
+        fill: Boolean,
+        phase: Boolean
+    ) {
+        renderBox(
+            ctx,
+            (bb.minX + bb.maxX) / 2.0,
+            bb.minY,
+            (bb.minZ + bb.maxZ) / 2.0,
+            bb.xsize,
+            bb.ysize,
+            outlineColor,
+            fillColor,
+            outline,
+            fill,
+            phase
+        )
     }
 
     private fun getColor(entity: Entity): Color? {
