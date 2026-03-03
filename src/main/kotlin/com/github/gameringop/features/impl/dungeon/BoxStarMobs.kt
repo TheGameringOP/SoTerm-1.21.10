@@ -74,38 +74,38 @@ object StarMob: Feature("Highlights all starred mobs in a dungeon.") {
             checked.clear()
         }
 
-        register<RenderWorldEvent> {
-    		val event = it.event
-			if (!LocationUtils.inDungeon || inBoss) return@register
-			if (starMobs.isEmpty()) return@register
-
-			for (id in starMobs) {
-				val entity = mc.level?.getEntity(id) ?: continue
-				if (!entity.isAlive) continue
-				val color = getColor(entity) ?: starMobColor.value
-				val partial = event.partialTicks
-				
-				val interpX = entity.xOld + (entity.x - entity.xOld) * partial
-				val interpY = entity.yOld + (entity.y - entity.yOld) * partial
-				val interpZ = entity.zOld + (entity.z - entity.zOld) * partial
-				
-				val width = entity.boundingBox.xsize
-				val height = entity.boundingBox.ysize
-				
-				Render3D.renderBox(
-				    event.ctx,
-				    interpX,
-				    interpY,
-				    interpZ,
-				    width,
-				    height,
-				    outlineColor = color,
-				    fillColor = color.withAlpha(50),
-				    outline = mode.value.equalsOneOf(1, 2),
-				    fill = mode.value.equalsOneOf(0, 2),
-				    phase = esp.value
-				)
-			}
+		register<RenderWorldEvent> { it ->
+		    if (!LocationUtils.inDungeon || inBoss) return@register
+		    if (starMobs.isEmpty()) return@register
+		
+		    val partial = it.partialTicks
+		
+		    for (id in starMobs) {
+		        val entity = mc.level?.getEntity(id) ?: continue
+		        if (!entity.isAlive) continue
+		        val color = getColor(entity) ?: starMobColor.value
+		
+		        val interpX = entity.xOld + (entity.x - entity.xOld) * partial
+		        val interpY = entity.yOld + (entity.y - entity.yOld) * partial
+		        val interpZ = entity.zOld + (entity.z - entity.zOld) * partial
+		
+		        val width = entity.boundingBox.xsize
+		        val height = entity.boundingBox.ysize
+		
+		        Render3D.renderBox(
+		            it.ctx,
+		            interpX,
+		            interpY,
+		            interpZ,
+		            width,
+		            height,
+		            outlineColor = color,
+		            fillColor = color.withAlpha(50),
+		            outline = mode.value.equalsOneOf(1, 2),
+		            fill = mode.value.equalsOneOf(0, 2),
+		            phase = esp.value
+		        )
+		    }
 		}
     }
 
