@@ -24,39 +24,39 @@ import kotlin.math.ceil
 
 object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
-    private val hudEnabled by ToggleSetting("Enabled", true).section("Main")
-    private val minimized by ToggleSetting("Minimized Mode", false)
+    private val hudEnabled = ToggleSetting("Enabled", true).section("Main")
+    private val minimized = ToggleSetting("Minimized Mode", false).section("Main")
         .withDescription("Shows only the score and rank in one line")
     
-    private val spiritTracking by DropdownSetting("Spirit Tracking", 1, listOf(
+    private val spiritTracking = DropdownSetting("Spirit Tracking", 1, listOf(
         "Off (No Spirit bonus)",
         "Assume Yes (Most parties have Spirit)",
         "Auto (Requires API Key)"
     )).section("Spirit Tracking")
     
-    private val showDungeonStatus by ToggleSetting("Show Dungeon Status", true).section("Sections")
-    private val showScoreSection by ToggleSetting("Show Score Section", true)
+    private val showDungeonStatus = ToggleSetting("Show Dungeon Status", true).section("Sections")
+    private val showScoreSection = ToggleSetting("Show Score Section", true).section("Sections")
     
-    private val showDeaths by ToggleSetting("Show Deaths", true).showIf { showDungeonStatus.value }
-    private val showMissingPuzzles by ToggleSetting("Show Missing Puzzles", true).showIf { showDungeonStatus.value }
-    private val showFailedPuzzles by ToggleSetting("Show Failed Puzzles", true).showIf { showDungeonStatus.value }
-    private val showSecrets by ToggleSetting("Show Secrets", true).showIf { showDungeonStatus.value }
-    private val showCrypts by ToggleSetting("Show Crypts", true).showIf { showDungeonStatus.value }
-    private val showMimic by ToggleSetting("Show Mimic", true).showIf { showDungeonStatus.value }
+    private val showDeaths = ToggleSetting("Show Deaths", true).showIf { showDungeonStatus.value }
+    private val showMissingPuzzles = ToggleSetting("Show Missing Puzzles", true).showIf { showDungeonStatus.value }
+    private val showFailedPuzzles = ToggleSetting("Show Failed Puzzles", true).showIf { showDungeonStatus.value }
+    private val showSecrets = ToggleSetting("Show Secrets", true).showIf { showDungeonStatus.value }
+    private val showCrypts = ToggleSetting("Show Crypts", true).showIf { showDungeonStatus.value }
+    private val showMimic = ToggleSetting("Show Mimic", true).showIf { showDungeonStatus.value }
     
-    private val showSkillScore by ToggleSetting("Show Skill Score", true).showIf { showScoreSection.value }
-    private val showExploreScore by ToggleSetting("Show Explore Score", true).showIf { showScoreSection.value }
-    private val showSpeedScore by ToggleSetting("Show Speed Score", true).showIf { showScoreSection.value }
-    private val showBonusScore by ToggleSetting("Show Bonus Score", true).showIf { showScoreSection.value }
-    private val showTotalScore by ToggleSetting("Show Total Score", true).showIf { showScoreSection.value }
-    private val showRank by ToggleSetting("Show Rank", true).showIf { showScoreSection.value }
+    private val showSkillScore = ToggleSetting("Show Skill Score", true).showIf { showScoreSection.value }
+    private val showExploreScore = ToggleSetting("Show Explore Score", true).showIf { showScoreSection.value }
+    private val showSpeedScore = ToggleSetting("Show Speed Score", true).showIf { showScoreSection.value }
+    private val showBonusScore = ToggleSetting("Show Bonus Score", true).showIf { showScoreSection.value }
+    private val showTotalScore = ToggleSetting("Show Total Score", true).showIf { showScoreSection.value }
+    private val showRank = ToggleSetting("Show Rank", true).showIf { showScoreSection.value }
     
-    private val headerColor by ColorSetting("Header Color", Color(0, 150, 255)).section("Colors")
-    private val textColor by ColorSetting("Text Color", Color.WHITE)
-    private val valueColor by ColorSetting("Value Color", Color(85, 255, 85))
-    private val warningColor by ColorSetting("Warning Color", Color(255, 85, 85))
-    private val paulColor by ColorSetting("Paul Bonus Color", Color(255, 170, 0))
-    private val spiritColor by ColorSetting("Spirit Color", Color(255, 170, 0))
+    private val headerColor = ColorSetting("Header Color", Color(0, 150, 255)).section("Colors")
+    private val textColor = ColorSetting("Text Color", Color.WHITE).section("Colors")
+    private val valueColor = ColorSetting("Value Color", Color(85, 255, 85)).section("Colors")
+    private val warningColor = ColorSetting("Warning Color", Color(255, 85, 85)).section("Colors")
+    private val paulColor = ColorSetting("Paul Bonus Color", Color(255, 170, 0)).section("Colors")
+    private val spiritColor = ColorSetting("Spirit Color", Color(255, 170, 0)).section("Colors")
     
     private var missingPuzzles = 0
     private var failedPuzzles = 0
@@ -159,7 +159,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                 
                 if (showSecrets.value) {
                     val foundSecrets = ScoreCalculation.foundSecrets
-                    val totalSecrets = DungeonListener.totalSecrets
+                    val totalSecrets = DungeonListener.secretsTotal
                     val neededSecrets = calculateNeededSecrets()
                     val secretsColor = if (foundSecrets >= neededSecrets) "§a" else "§c"
                     
@@ -263,7 +263,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             "F6" -> 0.85
             else -> 1.0
         }
-        val totalSecrets = DungeonListener.totalSecrets
+        val totalSecrets = DungeonListener.secretsTotal
         return if (totalSecrets > 0) ceil(totalSecrets * req).toInt() else 0
     }
     
