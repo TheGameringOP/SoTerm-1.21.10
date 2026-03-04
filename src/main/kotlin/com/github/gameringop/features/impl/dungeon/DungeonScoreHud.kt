@@ -235,16 +235,20 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             2 -> {
                 val allTeammates = DungeonListener.dungeonTeammatesNoSelf + (DungeonListener.thePlayer?.let { listOf(it) } ?: emptyList())
                 
+                // Only trigger checks for uncached players ONCE, not every frame
+                allTeammates.forEach { teammate ->
+                    if (HypixelAPI.getSpiritStatus(teammate.name) == null && !spiritDebugLogged.contains("checking_${teammate.name}")) {
+                        spiritDebugLogged.add("checking_${teammate.name}")
+                        HypixelAPI.checkSpiritPet(teammate.name)
+                    }
+                }
+                
                 val anySpirit = allTeammates.any { teammate ->
                     val status = HypixelAPI.getSpiritStatus(teammate.name)
-                    val hasSpirit = status == true || status == null || HypixelAPI.hasAssumedSpirit(teammate.name)
+                    val hasSpirit = status == true || HypixelAPI.hasAssumedSpirit(teammate.name)
                     
-                    if (SoTerm.debugFlags.contains("spirit") && hasSpirit && spiritDebugLogged.add(teammate.name)) {
+                    if (SoTerm.debugFlags.contains("spirit") && hasSpirit && spiritDebugLogged.add("spirit_${teammate.name}")) {
                         ChatUtils.modMessage("§eSpirit debug - ${teammate.name}: status=$status, assumed=${HypixelAPI.hasAssumedSpirit(teammate.name)}")
-                    }
-                    
-                    if (status == null) {
-                        HypixelAPI.checkSpiritPet(teammate.name)
                     }
                     
                     hasSpirit
@@ -296,7 +300,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                 
                 val anySpirit = allTeammates.any { teammate ->
                     val status = HypixelAPI.getSpiritStatus(teammate.name)
-                    status == true || status == null || HypixelAPI.hasAssumedSpirit(teammate.name)
+                    status == true || HypixelAPI.hasAssumedSpirit(teammate.name)
                 }
                 
                 if (anySpirit) {
