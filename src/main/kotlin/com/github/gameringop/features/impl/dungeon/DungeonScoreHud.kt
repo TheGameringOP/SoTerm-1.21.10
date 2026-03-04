@@ -20,6 +20,7 @@ import com.github.gameringop.utils.dungeons.map.handlers.ScoreCalculation
 import com.github.gameringop.utils.location.LocationUtils
 import com.github.gameringop.utils.render.Render2D
 import com.github.gameringop.utils.render.Render2D.width
+import net.minecraft.client.gui.GuiGraphics
 import java.awt.Color
 import kotlin.math.ceil
 
@@ -84,7 +85,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         failedPuzzles = DungeonListener.puzzles.count { it.state == RoomState.FAILED }
     }
     
-    private fun drawDemo(ctx: Render2D.Context): Pair<Float, Float> {
+    private fun drawDemo(ctx: GuiGraphics): Pair<Float, Float> {
         textLines.clear()
         
         if (minimized.value) {
@@ -126,7 +127,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         return maxWidth to y
     }
     
-    private fun drawActual(ctx: Render2D.Context): Pair<Float, Float> {
+    private fun drawActual(ctx: GuiGraphics): Pair<Float, Float> {
         textLines.clear()
         val floorNum = LocationUtils.dungeonFloorNumber ?: 0
         val isPaul = DungeonUtils.isPaul()
@@ -374,7 +375,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
     override fun init() {
         register<DungeonEvent.Score> {
-            // HUD updates automatically
         }
         
         register<TickEvent.Server> {
