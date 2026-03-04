@@ -103,7 +103,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
             return
         }
         
-        ThreadUtils.startThread {
+        ThreadUtils.scheduledTask(0) {
             try {
                 val request = Request.Builder()
                     .url("https://api.hypixel.net/key")
@@ -165,7 +165,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
         
         pendingRequests[username] = System.currentTimeMillis()
         
-        ThreadUtils.startThread {
+        ThreadUtils.scheduledTask(0) {
             try {
                 // Get UUID
                 val uuid = getUUIDFromUsername(username) ?: run {
@@ -173,7 +173,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
                     if (SoTerm.debugFlags.contains("spirit")) {
                         ChatUtils.modMessage("§cFailed to get UUID for $username")
                     }
-                    return@startThread
+                    return@scheduledTask
                 }
                 
                 // Get selected Skyblock profile
