@@ -35,9 +35,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     )).section("Spirit Tracking")
     
     private val showDungeonStatus by ToggleSetting("Show Dungeon Status", true).section("Sections")
-    private val showScoreSection by ToggleSetting("Show Score Section", true)
+    private val showScoreSection by ToggleSetting("Show Score Section", true).section("Sections")
     
-    private val showDeaths by ToggleSetting("Show Deaths", true).section("Toggles").showIf { showDungeonStatus.value }
+    private val showDeaths by ToggleSetting("Show Deaths", true).showIf { showDungeonStatus.value }
     private val showMissingPuzzles by ToggleSetting("Show Missing Puzzles", true).showIf { showDungeonStatus.value }
     private val showFailedPuzzles by ToggleSetting("Show Failed Puzzles", true).showIf { showDungeonStatus.value }
     private val showSecrets by ToggleSetting("Show Secrets", true).showIf { showDungeonStatus.value }
@@ -53,11 +53,11 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private val showRank by ToggleSetting("Show Rank", true).showIf { showScoreSection.value }
     
     private val headerColor by ColorSetting("Header Color", Color(0, 150, 255)).section("Colors")
-    private val textColor by ColorSetting("Text Color", Color.WHITE)
-    private val valueColor by ColorSetting("Value Color", Color(85, 255, 85))
-    private val warningColor by ColorSetting("Warning Color", Color(255, 85, 85))
-    private val paulColor by ColorSetting("Paul Bonus Color", Color(255, 170, 0))
-    private val spiritColor by ColorSetting("Spirit Color", Color(255, 170, 0))
+    private val textColor by ColorSetting("Text Color", Color.WHITE).section("Colors")
+    private val valueColor by ColorSetting("Value Color", Color(85, 255, 85)).section("Colors")
+    private val warningColor by ColorSetting("Warning Color", Color(255, 85, 85)).section("Colors")
+    private val paulColor by ColorSetting("Paul Bonus Color", Color(255, 170, 0)).section("Colors")
+    private val spiritColor by ColorSetting("Spirit Color", Color(255, 170, 0)).section("Colors")
     
     private var missingPuzzles = 0
     private var failedPuzzles = 0
@@ -87,31 +87,30 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun drawDemo(ctx: GuiGraphics): Pair<Float, Float> {
         textLines.clear()
         
-            if (showDungeonStatus.value) {
-                textLines.add("§9Dungeon Status")
-                if (showDeaths.value) textLines.add("§f• §eDeaths:§c 0")
-                if (showMissingPuzzles.value) textLines.add("§f• §eMissing Puzzles:§c 0")
-                if (showFailedPuzzles.value) textLines.add("§f• §eFailed Puzzles:§c 0")
-                if (showSecrets.value) textLines.add("§f• §eSecrets: §a50§7/§a50")
-                if (showCrypts.value) textLines.add("§f• §eCrypts:§a 5")
-                if (showMimic.value && (LocationUtils.dungeonFloorNumber ?: 0) >= 6) {
-                    textLines.add("§f• §eMimic:§a ✔")
-                }
-                if (showPrince.value) {
-                    textLines.add("§f• §ePrince:§a ✔")
-                }
-                textLines.add("")
+        if (showDungeonStatus.value) {
+            textLines.add("§9Dungeon Status")
+            if (showDeaths.value) textLines.add("§f• §eDeaths:§c 0")
+            if (showMissingPuzzles.value) textLines.add("§f• §eMissing Puzzles:§c 0")
+            if (showFailedPuzzles.value) textLines.add("§f• §eFailed Puzzles:§c 0")
+            if (showSecrets.value) textLines.add("§f• §eSecrets: §a50§7/§a50")
+            if (showCrypts.value) textLines.add("§f• §eCrypts:§a 5")
+            if (showMimic.value && (LocationUtils.dungeonFloorNumber ?: 0) >= 6) {
+                textLines.add("§f• §eMimic:§a ✔")
             }
-            
-            if (showScoreSection.value) {
-                textLines.add("§6Score")
-                if (showSkillScore.value) textLines.add("§f• §eSkill Score:§a 100")
-                if (showExploreScore.value) textLines.add("§f• §eExplore Score:§a 100 §7(§e60 §7+ §640§7)")
-                if (showSpeedScore.value) textLines.add("§f• §eSpeed Score:§a 100")
-                if (showBonusScore.value) textLines.add("§f• §eBonus Score:§a 17")
-                if (showTotalScore.value) textLines.add("§f• §eTotal Score:§a 317 §7(§6+10§7)")
-                if (showRank.value) textLines.add("§f• §eRank: §6§lS+")
+            if (showPrince.value) {
+                textLines.add("§f• §ePrince:§a ✔")
             }
+            textLines.add("")
+        }
+        
+        if (showScoreSection.value) {
+            textLines.add("§6Score")
+            if (showSkillScore.value) textLines.add("§f• §eSkill Score:§a 100")
+            if (showExploreScore.value) textLines.add("§f• §eExplore Score:§a 100 §7(§e60 §7+ §640§7)")
+            if (showSpeedScore.value) textLines.add("§f• §eSpeed Score:§a 100")
+            if (showBonusScore.value) textLines.add("§f• §eBonus Score:§a 17")
+            if (showTotalScore.value) textLines.add("§f• §eTotal Score:§a 317 §7(§6+10§7)")
+            if (showRank.value) textLines.add("§f• §eRank: §6§lS+")
         }
         
         var y = 0f
@@ -132,87 +131,86 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         val isPaul = DungeonUtils.isPaul()
         val totalScore = ScoreCalculation.score
         val rank = getRank(totalScore)
+        
+        if (showDungeonStatus.value) {
+            textLines.add("§9Dungeon Status")
             
-            if (showDungeonStatus.value) {
-                textLines.add("§9Dungeon Status")
-                
-                if (showDeaths.value) {
-                    val spiritText = getSpiritText()
-                    val deathsText = "§f• §eDeaths:§c ${ScoreCalculation.deathCount}$spiritText"
-                    textLines.add(deathsText)
-                }
-                
-                if (showMissingPuzzles.value) {
-                    textLines.add("§f• §eMissing Puzzles:§c $missingPuzzles")
-                }
-                
-                if (showFailedPuzzles.value) {
-                    textLines.add("§f• §eFailed Puzzles:§c $failedPuzzles")
-                }
-                
-                if (showSecrets.value) {
-                    val foundSecrets = ScoreCalculation.foundSecrets
-                    val totalSecrets = DungeonInfo.secretCount
-                    val neededSecrets = calculateNeededSecrets()
-                    val secretsColor = if (foundSecrets >= neededSecrets) "§a" else "§c"
-                    
-                    val secretsText = "§f• §eSecrets: $secretsColor$foundSecrets§7/§a$neededSecrets"
-                    textLines.add(secretsText)
-                }
-                
-                if (showCrypts.value) {
-                    val cryptsColor = if (ScoreCalculation.cryptsCount >= 5) "§a" else "§c"
-                    textLines.add("§f• §eCrypts: $cryptsColor${ScoreCalculation.cryptsCount}")
-                }
-                
-                if (showMimic.value && floorNum >= 6) {
-                    val mimicText = "§f• §eMimic:§l${if (ScoreCalculation.mimicKilled) "§a ✔" else "§c ✘"}"
-                    textLines.add(mimicText)
-                }
-                
-                if (showPrince.value) {
-                    val princeText = "§f• §ePrince:§l${if (ScoreCalculation.princeKilled) "§a ✔" else "§c ✘"}"
-                    textLines.add(princeText)
-                }
-                
-                textLines.add("")
+            if (showDeaths.value) {
+                val spiritText = getSpiritText()
+                val deathsText = "§f• §eDeaths:§c ${ScoreCalculation.deathCount}$spiritText"
+                textLines.add(deathsText)
             }
             
-            if (showScoreSection.value) {
-                textLines.add("§6Score")
+            if (showMissingPuzzles.value) {
+                textLines.add("§f• §eMissing Puzzles:§c $missingPuzzles")
+            }
+            
+            if (showFailedPuzzles.value) {
+                textLines.add("§f• §eFailed Puzzles:§c $failedPuzzles")
+            }
+            
+            if (showSecrets.value) {
+                val foundSecrets = ScoreCalculation.foundSecrets
+                val totalSecrets = DungeonInfo.secretCount
+                val neededSecrets = calculateNeededSecrets()
+                val secretsColor = if (foundSecrets >= neededSecrets) "§a" else "§c"
                 
-                if (showSkillScore.value) {
-                    val skillScore = calculateSkillScore()
-                    textLines.add("§f• §eSkill Score:§a $skillScore")
-                }
-                
-                if (showExploreScore.value) {
-                    val clearScore = calculateClearScore()
-                    val secretsScore = calculateSecretsScore()
-                    val exploreScore = clearScore + secretsScore
-                    textLines.add("§f• §eExplore Score:§a $exploreScore §7(§e$clearScore §7+ §6$secretsScore§7)")
-                }
-                
-                if (showSpeedScore.value) {
-                    val speedScore = calculateSpeedScore()
-                    textLines.add("§f• §eSpeed Score:§a $speedScore")
-                }
-                
-                if (showBonusScore.value) {
-                    val bonusScore = calculateBonusScore()
-                    val displayedBonus = if (floorNum == 0) ceil(bonusScore * 0.7).toInt() else bonusScore
-                    textLines.add("§f• §eBonus Score:§a $displayedBonus")
-                }
-                
-                if (showTotalScore.value) {
-                    val totalLine = "§f• §eTotal Score:§a $totalScore" + 
-                        (if (isPaul && floorNum != 0) " §7(§6+10§7)" else if (isPaul && floorNum == 0) " §7(§6+7§7)" else "")
-                    textLines.add(totalLine)
-                }
-                
-                if (showRank.value) {
-                    textLines.add("§f• §eRank: $rank")
-                }
+                val secretsText = "§f• §eSecrets: $secretsColor$foundSecrets§7/§a$neededSecrets"
+                textLines.add(secretsText)
+            }
+            
+            if (showCrypts.value) {
+                val cryptsColor = if (ScoreCalculation.cryptsCount >= 5) "§a" else "§c"
+                textLines.add("§f• §eCrypts: $cryptsColor${ScoreCalculation.cryptsCount}")
+            }
+            
+            if (showMimic.value && floorNum >= 6) {
+                val mimicText = "§f• §eMimic:§l${if (ScoreCalculation.mimicKilled) "§a ✔" else "§c ✘"}"
+                textLines.add(mimicText)
+            }
+            
+            if (showPrince.value) {
+                val princeText = "§f• §ePrince:§l${if (ScoreCalculation.princeKilled) "§a ✔" else "§c ✘"}"
+                textLines.add(princeText)
+            }
+            
+            textLines.add("")
+        }
+        
+        if (showScoreSection.value) {
+            textLines.add("§6Score")
+            
+            if (showSkillScore.value) {
+                val skillScore = calculateSkillScore()
+                textLines.add("§f• §eSkill Score:§a $skillScore")
+            }
+            
+            if (showExploreScore.value) {
+                val clearScore = calculateClearScore()
+                val secretsScore = calculateSecretsScore()
+                val exploreScore = clearScore + secretsScore
+                textLines.add("§f• §eExplore Score:§a $exploreScore §7(§e$clearScore §7+ §6$secretsScore§7)")
+            }
+            
+            if (showSpeedScore.value) {
+                val speedScore = calculateSpeedScore()
+                textLines.add("§f• §eSpeed Score:§a $speedScore")
+            }
+            
+            if (showBonusScore.value) {
+                val bonusScore = calculateBonusScore()
+                val displayedBonus = if (floorNum == 0) ceil(bonusScore * 0.7).toInt() else bonusScore
+                textLines.add("§f• §eBonus Score:§a $displayedBonus")
+            }
+            
+            if (showTotalScore.value) {
+                val totalLine = "§f• §eTotal Score:§a $totalScore" + 
+                    (if (isPaul && floorNum != 0) " §7(§6+10§7)" else if (isPaul && floorNum == 0) " §7(§6+7§7)" else "")
+                textLines.add(totalLine)
+            }
+            
+            if (showRank.value) {
+                textLines.add("§f• §eRank: $rank")
             }
         }
         
