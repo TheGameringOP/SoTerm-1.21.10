@@ -421,7 +421,10 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     fun preloadTeammates() {
         if (apiKey.value.isBlank()) return
         
-        val allPlayers = DungeonListener.dungeonTeammatesNoSelf + (DungeonListener.thePlayer?.let { listOf(it) } ?: emptyList())
+        val allPlayers = buildList {
+            addAll(DungeonListener.dungeonTeammatesNoSelf)
+            DungeonListener.thePlayer?.let { add(it) }
+        }
         
         allPlayers.forEach { teammate ->
             if (!isSpiritLoaded(teammate.name)) {
