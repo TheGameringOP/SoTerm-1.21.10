@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 object HypixelAPI : Feature("Hypixel API Integration") {
     
-    private val apiEnabled by ToggleSetting("Enabled", false).section("API")
+    private val apiEnabledSetting by ToggleSetting("Enabled", false).section("API")
     private val apiKey by TextInputSetting("API Key", "")
         .withDescription("Get your API key from https://developer.hypixel.net/")
     
@@ -45,6 +45,9 @@ object HypixelAPI : Feature("Hypixel API Integration") {
         assumedSpirit.clear()
         ChatUtils.modMessage("§aSpirit pet cache cleared!")
     }
+    
+    val apiEnabled: Boolean
+        get() = apiEnabledSetting.value
     
     private val gson = Gson()
     private val client = OkHttpClient.Builder()
@@ -184,7 +187,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     }
     
     private fun checkSpecificPlayer(username: String) {
-        if (!apiEnabled.value || apiKey.value.isBlank()) {
+        if (!apiEnabled || apiKey.value.isBlank()) {
             ChatUtils.modMessage("§cAPI is disabled or no key set!")
             return
         }
@@ -311,7 +314,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     }
     
     fun checkSpiritPet(username: String): Boolean {
-        if (!apiEnabled.value || apiKey.value.isBlank()) {
+        if (!apiEnabled || apiKey.value.isBlank()) {
             return true
         }
         
@@ -417,12 +420,6 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     fun hasAssumedSpirit(username: String): Boolean = assumedSpirit[username] == true
     
     fun preloadTeammates() {
-        if (!apiEnabled.value || apiKey.value.isBlank()) return
+        if (!apiEnabled || apiKey.value.isBlank()) return
         
-        DungeonListener.dungeonTeammatesNoSelf.forEach { teammate ->
-            if (!isSpiritLoaded(teammate.name)) {
-                checkSpiritPet(teammate.name)
-            }
-        }
-    }
-}
+        val allPlayers = DungeonListener.dungeonTeammatesNoSelf + (DungeonListener.thePlayer?.let { listOf(it) } ?: empty
