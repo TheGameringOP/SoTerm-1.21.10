@@ -45,6 +45,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private val showSecrets by ToggleSetting("Show Secrets", true).showIf { showDungeonStatus.value }
     private val showCrypts by ToggleSetting("Show Crypts", true).showIf { showDungeonStatus.value }
     private val showMimic by ToggleSetting("Show Mimic", true).showIf { showDungeonStatus.value }
+    private val showPrince by ToggleSetting("Show Prince", true).showIf { showDungeonStatus.value }
     
     private val showSkillScore by ToggleSetting("Show Skill Score", true).showIf { showScoreSection.value }
     private val showExploreScore by ToggleSetting("Show Explore Score", true).showIf { showScoreSection.value }
@@ -96,10 +97,13 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                 if (showDeaths.value) textLines.add("§f• §eDeaths:§c 0")
                 if (showMissingPuzzles.value) textLines.add("§f• §eMissing Puzzles:§c 0")
                 if (showFailedPuzzles.value) textLines.add("§f• §eFailed Puzzles:§c 0")
-                if (showSecrets.value) textLines.add("§f• §eSecrets: §a50§7/§a50 §7(§6Total: 50§7)")
+                if (showSecrets.value) textLines.add("§f• §eSecrets: §a50§7/§a50")
                 if (showCrypts.value) textLines.add("§f• §eCrypts:§a 5")
                 if (showMimic.value && (LocationUtils.dungeonFloorNumber ?: 0) >= 6) {
                     textLines.add("§f• §eMimic:§a ✔")
+                }
+                if (showPrince.value) {
+                    textLines.add("§f• §ePrince:§a ✔")
                 }
                 textLines.add("")
             }
@@ -165,8 +169,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                     val neededSecrets = calculateNeededSecrets()
                     val secretsColor = if (foundSecrets >= neededSecrets) "§a" else "§c"
                     
-                    val secretsText = "§f• §eSecrets: $secretsColor$foundSecrets§7/§a$neededSecrets" +
-                        (if (floorNum <= 7) " §7(§6Total: $totalSecrets§7)" else "")
+                    val secretsText = "§f• §eSecrets: $secretsColor$foundSecrets§7/§a$neededSecrets"
                     textLines.add(secretsText)
                 }
                 
@@ -178,6 +181,11 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                 if (showMimic.value && floorNum >= 6) {
                     val mimicText = "§f• §eMimic:§l${if (ScoreCalculation.mimicKilled) "§a ✔" else "§c ✘"}"
                     textLines.add(mimicText)
+                }
+                
+                if (showPrince.value) {
+                    val princeText = "§f• §ePrince:§l${if (ScoreCalculation.princeKilled) "§a ✔" else "§c ✘"}"
+                    textLines.add(princeText)
                 }
                 
                 textLines.add("")
@@ -366,9 +374,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             score >= 300 -> "§6§lS+"
             score >= 270 -> "§eS"
             score >= 230 -> "§5A"
-            score >= 190 -> "§aB"
-            score >= 150 -> "§9C"
-            score >= 100 -> "§cD"
+            score >= 160 -> "§aB"
+            score >= 100 -> "§9C"
+            score >= 0 -> "§cD"
             else -> "§8F"
         }
     }
