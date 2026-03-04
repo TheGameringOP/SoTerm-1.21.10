@@ -152,13 +152,11 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     fun checkSpiritPet(username: String): Boolean {
         if (!apiEnabled.value || apiKey.value.isBlank()) return false
         
-        // Check cache first
         spiritCache[username]?.let { return it }
         
-        // Check if request is pending (avoid spam)
         if (pendingRequests.containsKey(username)) {
             val lastRequest = pendingRequests[username] ?: 0
-            if (System.currentTimeMillis() - lastRequest < 60000) { // 1 minute cooldown
+            if (System.currentTimeMillis() - lastRequest < 60000) {
                 return false
             }
         }
@@ -167,7 +165,6 @@ object HypixelAPI : Feature("Hypixel API Integration") {
         
         ThreadUtils.scheduledTask(0) {
             try {
-                // Get UUID
                 val uuid = getUUIDFromUsername(username) ?: run {
                     spiritCache[username] = false
                     if (SoTerm.debugFlags.contains("spirit")) {
@@ -176,7 +173,6 @@ object HypixelAPI : Feature("Hypixel API Integration") {
                     return@scheduledTask
                 }
                 
-                // Get selected Skyblock profile
                 val profilesRequest = Request.Builder()
                     .url("https://api.hypixel.net/skyblock/profiles?uuid=$uuid")
                     .header("API-Key", apiKey.value)
@@ -202,7 +198,6 @@ object HypixelAPI : Feature("Hypixel API Integration") {
                         return@use
                     }
                     
-                    // Find selected profile
                     val selectedProfile = profiles.profiles?.find { it.selected }
                     val member = selectedProfile?.members?.get(uuid)
                     
@@ -222,7 +217,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
             }
         }
         
-        return false // Return false while loading
+        return false
     }
     
     fun getSpiritStatus(username: String): Boolean? = spiritCache[username]
