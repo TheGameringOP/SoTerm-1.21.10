@@ -27,8 +27,6 @@ import kotlin.math.ceil
 object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
     private val hudEnabled by ToggleSetting("Enabled", true).section("Main")
-    private val minimized by ToggleSetting("Minimized Mode", false).section("Main")
-        .withDescription("Shows only the score and rank in one line")
     
     private val spiritTracking by DropdownSetting("Spirit Tracking", 1, listOf(
         "Off",
@@ -89,9 +87,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun drawDemo(ctx: GuiGraphics): Pair<Float, Float> {
         textLines.clear()
         
-        if (minimized.value) {
-            textLines.add("§eScore: §e300 §7(§6§lS+§7)")
-        } else {
             if (showDungeonStatus.value) {
                 textLines.add("§9Dungeon Status")
                 if (showDeaths.value) textLines.add("§f• §eDeaths:§c 0")
@@ -137,15 +132,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         val isPaul = DungeonUtils.isPaul()
         val totalScore = ScoreCalculation.score
         val rank = getRank(totalScore)
-        
-        if (minimized.value) {
-            val scoreColor = when {
-                totalScore >= 300 -> 'a'
-                totalScore >= 270 -> 'e'
-                else -> 'c'
-            }
-            textLines.add("§eScore: §$scoreColor$totalScore §7($rank§7)")
-        } else {
+            
             if (showDungeonStatus.value) {
                 textLines.add("§9Dungeon Status")
                 
