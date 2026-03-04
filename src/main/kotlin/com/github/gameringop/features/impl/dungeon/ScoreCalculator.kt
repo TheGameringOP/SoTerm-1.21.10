@@ -17,8 +17,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.sounds.SoundEvents
 
 object ScoreCalculator: Feature("Shows the score of the dungeon run.") {
-    val forcePaul by ToggleSetting("Force Paul")
     private val hudElement by ToggleSetting("HUD Element")
+    val forcePaul by ToggleSetting("Force Paul")
     val sendMimic by ToggleSetting("Send Mimic Message")
     val sendPrince by ToggleSetting("Send Prince Message")
 
