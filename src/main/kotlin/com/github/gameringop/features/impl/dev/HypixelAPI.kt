@@ -22,7 +22,7 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     
     private val apiEnabled by ToggleSetting("Enabled", false).section("API")
     private val apiKey by TextInputSetting("API Key", "")
-        .withDescription("Get your API key from https://developer.hypixel.net/")
+        .withDescription("Get API key from https://developer.hypixel.net")
     
     private val testKey by ButtonSetting("Test API Key", false) {
         testApiKey()
@@ -108,24 +108,25 @@ object HypixelAPI : Feature("Hypixel API Integration") {
         ThreadUtils.scheduledTask(0) {
             try {
                 val request = Request.Builder()
-                    .url("https://api.hypixel.net/key")
+                    .url("https://api.hypixel.net/v2/player?name=Hypixel")
                     .header("API-Key", apiKey.value)
                     .build()
                 
                 client.newCall(request).execute().use { response ->
                     val responseBody = response.body?.string() ?: ""
-                    val keyResponse = gson.fromJson(responseBody, HypixelKeyResponse::class.java)
+                    val jsonResponse = gson.fromJson(responseBody, Map::class.java)
                     
-                    if (response.isSuccessful && keyResponse.success) {
-                        val record = keyResponse.record
+                    if (response.isSuccessful && jsonResponse["success"] == true) {
                         ChatUtils.modMessage("§aAPI key is valid!")
-                        if (record != null) {
-                            ChatUtils.modMessage("§7Owner: §f${record.owner}")
-                            ChatUtils.modMessage("§7Queries: §f${record.queriesInPastMin}/${record.limit} per minute")
+                        
+                        val rateLimit = response.header("RateLimit-Limit")
+                        val rateRemaining = response.header("RateLimit-Remaining")
+                        if (rateLimit != null && rateRemaining != null) {
+                            ChatUtils.modMessage("§7Rate limit: $rateRemaining/$rateLimit remaining")
                         }
                     } else {
-                        val error = keyResponse.cause ?: "Unknown error"
-                        ChatUtils.modMessage("§cAPI key is invalid! $error")
+                        val cause = jsonResponse["cause"] as? String ?: "Unknown error"
+                        ChatUtils.modMessage("§cAPI key is invalid! $cause")
                     }
                 }
             } catch (e: Exception) {
