@@ -6,6 +6,7 @@ import com.github.gameringop.ui.clickgui.components.impl.ButtonSetting
 import com.github.gameringop.ui.clickgui.components.impl.TextInputSetting
 import com.github.gameringop.ui.clickgui.components.impl.ToggleSetting
 import com.github.gameringop.ui.clickgui.components.section
+import com.github.gameringop.ui.clickgui.components.withDescription
 import com.github.gameringop.utils.ChatUtils
 import com.github.gameringop.utils.ThreadUtils
 import com.github.gameringop.utils.dungeons.DungeonListener
@@ -17,15 +18,15 @@ import java.util.concurrent.TimeUnit
 
 object HypixelAPI : Feature("Hypixel API Integration") {
     
-    private val apiEnabled by ToggleSetting("Enabled", false).section("Main")
-    private val apiKey by TextInputSetting("API Key", "")
+    private val apiEnabled = ToggleSetting("Enabled", false).section("Main")
+    private val apiKey = TextInputSetting("API Key", "").section("Main")
         .withDescription("Get your API key from https://developer.hypixel.net/")
     
-    private val testKey by ButtonSetting("Test API Key", false) {
+    private val testKey = ButtonSetting("Test API Key", false).section("Main") {
         testApiKey()
     }
     
-    private val clearCache by ButtonSetting("Clear Spirit Cache", false) {
+    private val clearCache = ButtonSetting("Clear Spirit Cache", false).section("Main") {
         spiritCache.clear()
         ChatUtils.modMessage("§aSpirit pet cache cleared!")
     }
