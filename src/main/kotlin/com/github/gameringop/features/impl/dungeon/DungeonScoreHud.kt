@@ -35,9 +35,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     )).section("Spirit Tracking")
     
     private val showDungeonStatus by ToggleSetting("Show Dungeon Status", true).section("Sections")
-    private val showScoreSection by ToggleSetting("Show Score Section", true).section("Sections")
+    private val showScoreSection by ToggleSetting("Show Score Section", true)
     
-    private val showDeaths by ToggleSetting("Show Deaths", true).showIf { showDungeonStatus.value }
+    private val showDeaths by ToggleSetting("Show Deaths", true).section("Toggles").showIf { showDungeonStatus.value }
     private val showMissingPuzzles by ToggleSetting("Show Missing Puzzles", true).showIf { showDungeonStatus.value }
     private val showFailedPuzzles by ToggleSetting("Show Failed Puzzles", true).showIf { showDungeonStatus.value }
     private val showSecrets by ToggleSetting("Show Secrets", true).showIf { showDungeonStatus.value }
@@ -53,11 +53,11 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private val showRank by ToggleSetting("Show Rank", true).showIf { showScoreSection.value }
     
     private val headerColor by ColorSetting("Header Color", Color(0, 150, 255)).section("Colors")
-    private val textColor by ColorSetting("Text Color", Color.WHITE).section("Colors")
-    private val valueColor by ColorSetting("Value Color", Color(85, 255, 85)).section("Colors")
-    private val warningColor by ColorSetting("Warning Color", Color(255, 85, 85)).section("Colors")
-    private val paulColor by ColorSetting("Paul Bonus Color", Color(255, 170, 0)).section("Colors")
-    private val spiritColor by ColorSetting("Spirit Color", Color(255, 170, 0)).section("Colors")
+    private val textColor by ColorSetting("Text Color", Color.WHITE)
+    private val valueColor by ColorSetting("Value Color", Color(85, 255, 85))
+    private val warningColor by ColorSetting("Warning Color", Color(255, 85, 85))
+    private val paulColor by ColorSetting("Paul Bonus Color", Color(255, 170, 0))
+    private val spiritColor by ColorSetting("Spirit Color", Color(255, 170, 0))
     
     private var missingPuzzles = 0
     private var failedPuzzles = 0
