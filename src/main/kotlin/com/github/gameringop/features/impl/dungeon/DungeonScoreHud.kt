@@ -405,8 +405,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         register<DungeonEvent.Score> {
         }
         
+
         register<DungeonEvent.RunStatedEvent> {
-            if (spiritTracking.value == 2 && HypixelAPI.apiEnabled) {
+            if (spiritTracking.value == 2 && HypixelAPI.hasValidKey) {
                 HypixelAPI.preloadTeammates()
             }
         }
