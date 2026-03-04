@@ -22,14 +22,14 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     private val apiKey = TextInputSetting("API Key", "").section("Main")
         .withDescription("Get your API key from https://developer.hypixel.net/")
     
-    private val testKey = ButtonSetting("Test API Key", false).section("Main") {
+    private val testKey = ButtonSetting("Test API Key", false) {
         testApiKey()
-    }
+    }.section("Main")
     
-    private val clearCache = ButtonSetting("Clear Spirit Cache", false).section("Main") {
+    private val clearCache = ButtonSetting("Clear Spirit Cache", false) {
         spiritCache.clear()
         ChatUtils.modMessage("§aSpirit pet cache cleared!")
-    }
+    }.section("Main")
     
     private val gson = Gson()
     private val client = OkHttpClient.Builder()
