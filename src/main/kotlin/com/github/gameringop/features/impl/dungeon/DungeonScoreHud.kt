@@ -388,17 +388,17 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             if (spiritTracking.value == 2 && !checkedSpiritForFirstDeath) {
                 checkedSpiritForFirstDeath = true
                 
-                val deadPlayerHadSpirit = HypixelAPI.getSpiritStatus(event.playerName) == true
+                val deadPlayerHadSpirit = HypixelAPI.getSpiritStatus(event.name) == true
                 
                 if (deadPlayerHadSpirit) {
                     firstDeathHadSpirit = true
                     if (SoTerm.debugFlags.contains("spirit")) {
-                        ChatUtils.modMessage("§aFirst death: ${event.playerName} had Spirit - reducing penalty")
+                        ChatUtils.modMessage("§aFirst death: ${event.name} had Spirit - reducing penalty")
                     }
                 } else {
                     firstDeathHadSpirit = false
                     if (SoTerm.debugFlags.contains("spirit")) {
-                        ChatUtils.modMessage("§cFirst death: ${event.playerName} did NOT have Spirit - full penalty")
+                        ChatUtils.modMessage("§cFirst death: ${event.name} did NOT have Spirit - full penalty")
                     }
                 }
             }
