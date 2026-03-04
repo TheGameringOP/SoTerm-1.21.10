@@ -27,7 +27,7 @@ import kotlin.math.ceil
 
 object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
-    private val hudEnabled by ToggleSetting("Enabled", true).section("Main")
+    private val showInBoss by ToggleSetting("Show in Boss", true).section("Main")
     
     private val spiritTracking by DropdownSetting("Spirit Tracking", 1, listOf(
         "Off",
@@ -69,7 +69,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
     private val hud by hudElement(
         name = "Dungeon Score HUD",
-        enabled = { hudEnabled.value && LocationUtils.inDungeon && !LocationUtils.inBoss },
+        enabled = { LocationUtils.inDungeon && (showInBoss.value || !LocationUtils.inBoss) },
         shouldDraw = { true }
     ) { ctx, demo ->
         if (demo) {
@@ -232,27 +232,24 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             0 -> ""
             1 -> " §7(§6Spirit§7)"
             2 -> {
-                if (firstDeathHadSpirit) {
-                    " §7(§6Spirit§7)"
-                } else if (!checkedSpiritForFirstDeath && ScoreCalculation.deathCount > 0) {
-                    checkedSpiritForFirstDeath = true
-                    
-                    val hasSpirit = DungeonListener.dungeonTeammatesNoSelf.any { 
-                        HypixelAPI.getSpiritStatus(it.name) == true 
-                    }
-                    
-                    val hadAssumptions = DungeonListener.dungeonTeammatesNoSelf.any {
-                        HypixelAPI.hasAssumedSpirit(it.name)
-                    }
-                    
-                    if (hasSpirit || hadAssumptions) {
-                        firstDeathHadSpirit = true
-                        if (hadAssumptions && SoTerm.debugFlags.contains("spirit")) {
-                            ChatUtils.modMessage("§eSpirit status assumed for some players due to API errors")
+                val anySpirit = DungeonListener.dungeonTeammatesNoSelf.any { teammate ->
+                    val status = HypixelAPI.getSpiritStatus(teammate.name)
+                    when {
+                        status == true -> true
+                        status == null -> {
+                            HypixelAPI.checkSpiritPet(teammate.name)
+                            true
                         }
-                        " §7(§6Spirit§7)"
-                    } else ""
-                } else ""
+                        HypixelAPI.hasAssumedSpirit(teammate.name) -> true
+                        else -> false
+                    }
+                }
+                
+                if (anySpirit) {
+                    " §7(§6Spirit§7)"
+                } else {
+                    ""
+                }
             }
             else -> ""
         }
@@ -290,7 +287,12 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             0 -> ScoreCalculation.deathCount * 2
             1 -> (ScoreCalculation.deathCount * 2) - 1
             2 -> {
-                if (firstDeathHadSpirit) {
+                val anySpirit = DungeonListener.dungeonTeammatesNoSelf.any { teammate ->
+                    val status = HypixelAPI.getSpiritStatus(teammate.name)
+                    status == true || status == null || HypixelAPI.hasAssumedSpirit(teammate.name)
+                }
+                
+                if (anySpirit) {
                     (ScoreCalculation.deathCount * 2) - 1
                 } else {
                     ScoreCalculation.deathCount * 2
