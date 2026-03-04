@@ -14,6 +14,7 @@ import com.github.gameringop.ui.hud.getValue
 import com.github.gameringop.ui.hud.provideDelegate
 import com.github.gameringop.utils.dungeons.DungeonListener
 import com.github.gameringop.utils.dungeons.DungeonUtils
+import com.github.gameringop.utils.dungeons.map.DungeonInfo
 import com.github.gameringop.utils.dungeons.map.core.RoomState
 import com.github.gameringop.utils.dungeons.map.handlers.ScoreCalculation
 import com.github.gameringop.utils.location.LocationUtils
@@ -159,7 +160,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
                 
                 if (showSecrets.value) {
                     val foundSecrets = ScoreCalculation.foundSecrets
-                    val totalSecrets = DungeonListener.secretsTotal
+                    val totalSecrets = DungeonInfo.secretCount
                     val neededSecrets = calculateNeededSecrets()
                     val secretsColor = if (foundSecrets >= neededSecrets) "§a" else "§c"
                     
@@ -263,7 +264,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             "F6" -> 0.85
             else -> 1.0
         }
-        val totalSecrets = DungeonListener.secretsTotal
+        val totalSecrets = DungeonInfo.secretCount
         return if (totalSecrets > 0) ceil(totalSecrets * req).toInt() else 0
     }
     
