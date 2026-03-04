@@ -233,9 +233,26 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             0 -> ""
             1 -> " §7(§6Spirit§7)"
             2 -> {
-                
                 if (firstDeathHadSpirit) {
                     " §7(§6Spirit§7)"
+                } else if (!checkedSpiritForFirstDeath && ScoreCalculation.deathCount > 0) {
+
+                    checkedSpiritForFirstDeath = true
+                    
+                    val allTeammates = DungeonListener.dungeonTeammatesNoSelf + (DungeonListener.thePlayer?.let { listOf(it) } ?: emptyList())
+                    
+                    val hasSpirit = allTeammates.any { teammate ->
+                        val status = HypixelAPI.getSpiritStatus(teammate.name)
+
+                        status == true || HypixelAPI.hasAssumedSpirit(teammate.name)
+                    }
+                    
+                    if (hasSpirit) {
+                        firstDeathHadSpirit = true
+                        " §7(§6Spirit§7)"
+                    } else {
+                        ""
+                    }
                 } else {
                     ""
                 }
