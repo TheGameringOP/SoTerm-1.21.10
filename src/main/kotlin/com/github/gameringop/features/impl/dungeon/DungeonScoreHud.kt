@@ -3,6 +3,7 @@ package com.github.gameringop.features.impl.dungeon
 import com.github.gameringop.SoTerm
 import com.github.gameringop.event.impl.DungeonEvent
 import com.github.gameringop.event.impl.TickEvent
+import com.github.gameringop.event.impl.WorldChangeEvent
 import com.github.gameringop.features.Feature
 import com.github.gameringop.features.impl.dev.HypixelAPI
 import com.github.gameringop.ui.clickgui.components.*
@@ -235,24 +236,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             2 -> {
                 if (firstDeathHadSpirit) {
                     " §7(§6Spirit§7)"
-                } else if (!checkedSpiritForFirstDeath && ScoreCalculation.deathCount > 0) {
-
-                    checkedSpiritForFirstDeath = true
-                    
-                    val allTeammates = DungeonListener.dungeonTeammatesNoSelf + (DungeonListener.thePlayer?.let { listOf(it) } ?: emptyList())
-                    
-                    val hasSpirit = allTeammates.any { teammate ->
-                        val status = HypixelAPI.getSpiritStatus(teammate.name)
-
-                        status == true || HypixelAPI.hasAssumedSpirit(teammate.name)
-                    }
-                    
-                    if (hasSpirit) {
-                        firstDeathHadSpirit = true
-                        " §7(§6Spirit§7)"
-                    } else {
-                        ""
-                    }
                 } else {
                     ""
                 }
@@ -293,7 +276,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             0 -> ScoreCalculation.deathCount * 2
             1 -> (ScoreCalculation.deathCount * 2) - 1
             2 -> {
-                if (ScoreCalculation.deathCount > 0 && firstDeathHadSpirit) {
+                if (firstDeathHadSpirit) {
                     (ScoreCalculation.deathCount * 2) - 1
                 } else {
                     ScoreCalculation.deathCount * 2
@@ -307,7 +290,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         
         return if (floorNum == 0) rawScore.coerceIn(14, 70) else rawScore.coerceIn(20, 100)
     }
-
+    
     private fun calculateClearScore(): Int {
         val totalRooms = if (ScoreCalculation.completedRooms > 0 && ScoreCalculation.clearedPercentage > 0) {
             (ScoreCalculation.completedRooms / (ScoreCalculation.clearedPercentage / 100.0)).toInt()
@@ -392,36 +375,33 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     }
     
     override fun init() {
-        register<DungeonEvent.Score> {
-        }
-        
-
-        register<DungeonEvent.RunStatedEvent> {
-            if (spiritTracking.value == 2 && HypixelAPI.hasValidKey) {
-                HypixelAPI.preloadTeammates()
+        register<WorldChangeEvent> {
+            if (LocationUtils.inDungeon) {
+                reset()
+                if (spiritTracking.value == 2 && HypixelAPI.hasValidKey) {
+                    HypixelAPI.preloadTeammates()
+                }
             }
         }
         
-        register<TickEvent.Server> {
-            if (LocationUtils.inDungeon && !LocationUtils.inBoss) {
-                updateData()
+        register<DungeonEvent.PlayerDeathEvent> { event ->
+            if (spiritTracking.value == 2 && !checkedSpiritForFirstDeath) {
+                checkedSpiritForFirstDeath = true
+                
+                val deadPlayerHadSpirit = HypixelAPI.getSpiritStatus(event.playerName) == true
+                
+                if (deadPlayerHadSpirit) {
+                    firstDeathHadSpirit = true
+                    if (SoTerm.debugFlags.contains("spirit")) {
+                        ChatUtils.modMessage("§aFirst death: ${event.playerName} had Spirit - reducing penalty")
+                    }
+                } else {
+                    firstDeathHadSpirit = false
+                    if (SoTerm.debugFlags.contains("spirit")) {
+                        ChatUtils.modMessage("§cFirst death: ${event.playerName} did NOT have Spirit - full penalty")
+                    }
+                }
             }
         }
-    }
-    
-    override fun onEnable() {
-        super.onEnable()
-        reset()
-    }
-    
-    override fun onDisable() {
-        super.onDisable()
-        reset()
-    }
-    
-    private fun reset() {
-        firstDeathHadSpirit = false
-        checkedSpiritForFirstDeath = false
-        spiritDebugLogged.clear()
-    }
-}
+        
+        register<Tick
