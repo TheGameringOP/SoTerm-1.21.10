@@ -378,9 +378,22 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         register<WorldChangeEvent> {
             if (LocationUtils.inDungeon) {
                 reset()
+                if (SoTerm.debugFlags.contains("spirit")) {
+                    ChatUtils.modMessage("§eWorld changed to dungeon, preloading...")
+                    ChatUtils.modMessage("§espiritTracking=${spiritTracking.value}, hasValidKey=${HypixelAPI.hasValidKey}")
+                }
                 if (spiritTracking.value == 2 && HypixelAPI.hasValidKey) {
                     HypixelAPI.preloadTeammates()
                 }
+            }
+        }
+
+        register<DungeonEvent.RunStatedEvent> {
+            if (spiritTracking.value == 2 && HypixelAPI.hasValidKey) {
+                if (SoTerm.debugFlags.contains("spirit")) {
+                    ChatUtils.modMessage("§eDungeon started, ensuring cache is loaded...")
+                }
+                HypixelAPI.preloadTeammates()
             }
         }
         
