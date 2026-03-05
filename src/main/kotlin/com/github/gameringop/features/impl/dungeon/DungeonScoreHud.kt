@@ -132,7 +132,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         textLines.clear()
         val floorNum = LocationUtils.dungeonFloorNumber ?: 0
         val isPaul = DungeonUtils.isPaul()
-        val totalScore = ScoreCalculation.score
+        val totalScore = skillScore+exploreScore+speedScore+displayedBonus
         val rank = getRank(totalScore)
         
         if (showDungeonStatus.value) {
