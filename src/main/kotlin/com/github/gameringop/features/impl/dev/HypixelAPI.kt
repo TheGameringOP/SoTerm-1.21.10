@@ -324,37 +324,111 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     
     fun checkSpiritPet(username: String): Boolean {
         if (apiKey.value.isBlank()) {
-            return true
-        }
-        
-        spiritCache[username]?.let { return it }
-        
-        try {
-            val uuid = getUUIDFromUsername(username) ?: return true
-            
-            val request = Request.Builder()
-                .url("https://api.hypixel.net/skyblock/profiles?uuid=$uuid")
-                .header("API-Key", apiKey.value)
-                .build()
-            
-            val response = client.newCall(request).execute()
-            val json = response.body?.string() ?: return true
-            val profilesResponse = gson.fromJson(json, SkyblockProfiles::class.java)
-            
-            if (!profilesResponse.success) {
-                return true
+            if (SoTerm.debugFlags.contains("spirit")) {
+                ChatUtils.modMessage("§eNo API key, assuming Spirit for $username")
             }
-            
-            val selectedProfile = profilesResponse.profiles?.find { it.selected } ?: return true
-            val member = selectedProfile.members[uuid]
-            val hasSpirit = member?.pets_data?.pets?.any { it.isSpirit } ?: false
-            
-            spiritCache[username] = hasSpirit
-            return hasSpirit
-            
-        } catch (e: Exception) {
+            spiritCache[username] = true
             return true
         }
+        
+        spiritCache[username]?.let { 
+            if (SoTerm.debugFlags.contains("spirit")) {
+                ChatUtils.modMessage("§eCache hit for $username: $it")
+            }
+            return it 
+        }
+        
+        Thread {
+            try {
+                val uuid = getUUIDFromUsername(username) ?: run {
+                    if (SoTerm.debugFlags.contains("spirit")) {
+                        ChatUtils.modMessage("§eUUID fetch failed for $username, assuming Spirit")
+                    }
+                    spiritCache[username] = true
+                    return@Thread
+                }
+                
+                val url = "https://api.hypixel.net/v2/skyblock/profiles?uuid=$uuid"
+                
+                if (SoTerm.debugFlags.contains("link")) {
+                    ChatUtils.modMessage("§7Request URL: $url")
+                }
+                
+                val request = Request.Builder()
+                    .url(url)
+                    .header("API-Key", apiKey.value)
+                    .build()
+                
+                client.newCall(request).execute().use { response ->
+                    val responseBody = response.body?.string() ?: ""
+                    
+                    if (!response.isSuccessful) {
+                        if (SoTerm.debugFlags.contains("spirit")) {
+                            ChatUtils.modMessage("§eAPI request failed (${response.code}) for $username, assuming Spirit")
+                        }
+                        if (SoTerm.debugFlags.contains("link")) {
+                            ChatUtils.modMessage("§7Response body: ${responseBody.take(500)}")
+                        }
+                        spiritCache[username] = true
+                        return@use
+                    }
+                    
+                    val profilesResponse = try {
+                        gson.fromJson(responseBody, SkyblockProfiles::class.java)
+                    } catch (e: Exception) {
+                        if (SoTerm.debugFlags.contains("spirit")) {
+                            ChatUtils.modMessage("§eJSON parse failed for $username, assuming Spirit")
+                        }
+                        if (SoTerm.debugFlags.contains("link")) {
+                            ChatUtils.modMessage("§7Raw response: ${responseBody.take(500)}")
+                        }
+                        spiritCache[username] = true
+                        return@use
+                    }
+                    
+                    if (!profilesResponse.success) {
+                        if (SoTerm.debugFlags.contains("spirit")) {
+                            ChatUtils.modMessage("§eAPI error (${profilesResponse.cause}) for $username, assuming Spirit")
+                        }
+                        spiritCache[username] = true
+                        return@use
+                    }
+                    
+                    val selectedProfile = profilesResponse.profiles?.find { it.selected }
+                    
+                    if (selectedProfile == null) {
+                        if (SoTerm.debugFlags.contains("spirit")) {
+                            ChatUtils.modMessage("§eNo selected profile for $username, assuming Spirit")
+                        }
+                        spiritCache[username] = true
+                        return@use
+                    }
+                    
+                    val member = selectedProfile.members[uuid]
+                    val hasSpirit = member?.pets_data?.pets?.any { it.isSpirit } ?: false
+                    
+                    if (SoTerm.debugFlags.contains("spirit")) {
+                        if (hasSpirit) {
+                            ChatUtils.modMessage("§a$username has Legendary Spirit pet")
+                        } else {
+                            ChatUtils.modMessage("§c$username does NOT have Legendary Spirit pet")
+                        }
+                    }
+                    
+                    spiritCache[username] = hasSpirit
+                }
+            } catch (e: Exception) {
+                if (SoTerm.debugFlags.contains("spirit")) {
+                    ChatUtils.modMessage("§eException for $username: ${e.message}, assuming Spirit")
+                }
+                if (SoTerm.debugFlags.contains("link")) {
+                    e.printStackTrace()
+                }
+                spiritCache[username] = true
+            }
+        }.start()
+        
+        return spiritCache[username] ?: false
     }
         
     fun getSpiritStatus(username: String): Boolean? = spiritCache[username]
