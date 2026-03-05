@@ -66,7 +66,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private var failedPuzzles = 0
     private var firstDeathHadSpirit = false
     private var checkedSpiritForFirstDeath = false
-    private val spiritDebugLogged = mutableSetOf<String>()
     
     private val textLines = mutableListOf<String>()
     
@@ -231,16 +230,13 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     }
     
     private fun getSpiritText(): String {
+        if (SoTerm.debugFlags.contains("spirit") && spiritTracking.value == 2) {
+            ChatUtils.modMessage("§egetSpiritText called - firstDeathHadSpirit = $firstDeathHadSpirit")
+        }
         return when (spiritTracking.value) {
             0 -> ""
             1 -> " §7(§6Spirit§7)"
-            2 -> {
-                if (firstDeathHadSpirit) {
-                    " §7(§6Spirit§7)"
-                } else {
-                    ""
-                }
-            }
+            2 -> if (firstDeathHadSpirit) " §7(§6Spirit§7)" else ""
             else -> ""
         }
     }
@@ -379,6 +375,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         register<WorldChangeEvent> {
             if (LocationUtils.inDungeon) {
                 reset()
+                if (SoTerm.debugFlags.contains("spirit")) {
+                    ChatUtils.modMessage("§eAfter reset - firstDeathHadSpirit = $firstDeathHadSpirit")
+                }
             }
         }
         
@@ -417,6 +416,5 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun reset() {
         firstDeathHadSpirit = false
         checkedSpiritForFirstDeath = false
-        spiritDebugLogged.clear()
     }
 }
