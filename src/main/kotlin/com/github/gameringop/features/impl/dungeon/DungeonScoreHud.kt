@@ -83,10 +83,13 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     }
     
     private fun updateData() {
+        val incompletePuzzles = DungeonListener.puzzles.count { 
+            it.state != RoomState.GREEN && it.state != RoomState.CLEARED 
+        }
         missingPuzzles = DungeonListener.puzzles.count { it.state == RoomState.UNOPENED }
         failedPuzzles = DungeonListener.puzzles.count { it.state == RoomState.FAILED }
     }
-    
+        
     private fun drawDemo(ctx: GuiGraphics): Pair<Float, Float> {
         textLines.clear()
         
@@ -264,7 +267,9 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
         val clearPercent = if (totalRooms > 0) completedRooms.toDouble() / totalRooms else 0.0
         val baseSkill = 20 + (clearPercent * 80)
         
-        val puzzlePenalty = (missingPuzzles + failedPuzzles) * 10
+        val puzzlePenalty = DungeonListener.puzzles.count { 
+            it.state != RoomState.GREEN && it.state != RoomState.CLEARED 
+        } * 10
         
         val deathPenalty = when (spiritTracking.value) {
             0 -> ScoreCalculation.deathCount * 2
