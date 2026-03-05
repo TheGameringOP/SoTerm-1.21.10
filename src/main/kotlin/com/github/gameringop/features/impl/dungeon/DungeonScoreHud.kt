@@ -413,6 +413,5 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun reset() {
         firstDeathHadSpirit = false
         checkedSpiritForFirstDeath = false
-        println("RESET CALLED - firstDeathHadSpirit = false")
     }
 }
