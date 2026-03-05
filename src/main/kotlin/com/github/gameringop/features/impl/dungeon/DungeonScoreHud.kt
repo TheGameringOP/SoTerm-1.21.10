@@ -230,9 +230,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     }
     
     private fun getSpiritText(): String {
-        if (SoTerm.debugFlags.contains("spirit") && spiritTracking.value == 2) {
-            ChatUtils.modMessage("§egetSpiritText called - firstDeathHadSpirit = $firstDeathHadSpirit")
-        }
         return when (spiritTracking.value) {
             0 -> ""
             1 -> " §7(§6Spirit§7)"
@@ -416,5 +413,6 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun reset() {
         firstDeathHadSpirit = false
         checkedSpiritForFirstDeath = false
+        println("RESET CALLED - firstDeathHadSpirit = false")
     }
 }
