@@ -19,7 +19,8 @@ import net.minecraft.world.entity.EquipmentSlot
 
 object MaskTimers: Feature("Mask Cooldown Timers, Invulnerability Timers, and more") {
     private val onlyInDungeon by ToggleSetting("Dungeons Only")
-    private val maskTimerStyle by DropdownSetting("Style", 0, listOf("SoTerm", "Zyryon"))
+    private val showTimers by ToggleSetting("Show Timers")
+    private val maskTimerStyle by DropdownSetting("Style", 0, listOf("SoTerm", "Zyryon")).showIf { showTimers.value }
 
     private val invulnerabilityTimers by ToggleSetting("Invulnerability Timers")
     private val procNotification by ToggleSetting("Proc Notification")
@@ -60,15 +61,17 @@ object MaskTimers: Feature("Mask Cooldown Timers, Invulnerability Timers, and mo
 
     override fun init() {
         hudElement("Mask Timers") { context, example ->
-            if (onlyInDungeon.value && ! LocationUtils.inDungeon && ! example) return@hudElement 0f to 0f
-
+            if (!showTimers.value && !example) return@hudElement 0f to 0f
+            
+            if (onlyInDungeon.value && !LocationUtils.inDungeon && !example) return@hudElement 0f to 0f
+        
             var maxWidth = 0f
             var yOffset = 0f
-
+        
             Mask.entries.forEach { mask ->
                 val cd = if (example) mask.cooldownTicks / 2 else mask.cdLeft
-                if (maskTimerStyle.value == 0 && cd <= 0 && ! example) return@forEach
-
+                if (maskTimerStyle.value == 0 && cd <= 0 && !example) return@forEach
+        
                 val text = if (maskTimerStyle.value == 0) {
                     val time = if (example) mask.cooldownTicks / 40f else cd / 20f
                     if (time > 0) "${mask.color}${mask.displayName} ${mask.suffix}: &a${time.toFixed(1)}"
@@ -79,7 +82,7 @@ object MaskTimers: Feature("Mask Cooldown Timers, Invulnerability Timers, and mo
                     if (cd > 0) "${mask.color}${mask.displayName} $arrow &e${(cd / 20.0).toFixed(2)}"
                     else "${mask.color}${mask.displayName} $arrow &aReady"
                 }
-
+        
                 Render2D.drawString(context, text, 0, yOffset.toInt())
                 maxWidth = maxOf(maxWidth, text.width().toFloat())
                 yOffset += 10f
