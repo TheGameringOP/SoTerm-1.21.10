@@ -129,7 +129,7 @@ object SpringBoots : Feature("Spring Boots Display") {
                 ctx = event.ctx,
                 x = pos.x,
                 y = pos.y + blockAmount.toDouble(),
-                z = poz.z,
+                z = pos.z,
                 width = 1.0,
                 height = 1.0,
                 outlineColor = boxColor.value,
