@@ -25,7 +25,6 @@ import java.awt.Color
 
 object SpringBoots : Feature("Spring Boots Display") {
     
-    private val modEnabled by ToggleSetting("Enabled", true).section("Main")
     private val show2DHud by ToggleSetting("Show 2D HUD", true)
         .withDescription("Shows jump height as text on screen")
     private val show3DBox by ToggleSetting("Show 3D Box", true)
@@ -68,8 +67,8 @@ object SpringBoots : Feature("Spring Boots Display") {
     
     private val hud by hudElement(
         name = "Spring Boots Height",
-        enabled = { modEnabled.value && show2DHud.value && LocationUtils.inSkyblock },
-        shouldDraw = { true }
+        enabled = { LocationUtils.inSkyblock },
+        shouldDraw = { show2DHud.value }
     ) { context, demo ->
         val displayAmount = if (demo) 33.0f else blockAmount
         if (displayAmount <= 0f && !demo) return@hudElement 0f to 0f
@@ -82,7 +81,7 @@ object SpringBoots : Feature("Spring Boots Display") {
     
     override fun init() {
         register<MainThreadPacketReceivedEvent.Pre> {
-            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
+            if (!LocationUtils.inSkyblock) return@register
             if (event.packet !is ClientboundSoundPacket) return@register
             val player = mc.player ?: return@register
             
@@ -109,7 +108,7 @@ object SpringBoots : Feature("Spring Boots Display") {
         }
         
         register<TickEvent.End> {
-            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
+            if (!LocationUtils.inSkyblock) return@register
             val player = mc.player ?: return@register
             
             if (!player.isCrouching || !isWearingSpringBoots()) {
@@ -120,7 +119,7 @@ object SpringBoots : Feature("Spring Boots Display") {
         }
         
         register<RenderWorldEvent> {
-            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
+            if (!LocationUtils.inSkyblock) return@register
             if (!show3DBox.value) return@register
             if (blockAmount == 0f) return@register
             
