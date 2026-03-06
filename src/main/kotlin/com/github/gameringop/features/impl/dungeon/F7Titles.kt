@@ -4,8 +4,10 @@ import com.github.gameringop.event.EventBus
 import com.github.gameringop.event.impl.*
 import com.github.gameringop.features.Feature
 import com.github.gameringop.ui.clickgui.components.getValue
+import com.github.gameringop.ui.clickgui.components.impl.DropdownSetting
 import com.github.gameringop.ui.clickgui.components.impl.ToggleSetting
 import com.github.gameringop.ui.clickgui.components.provideDelegate
+import com.github.gameringop.ui.clickgui.components.withDescription
 import com.github.gameringop.utils.ChatUtils
 import com.github.gameringop.utils.ChatUtils.unformattedText
 import com.github.gameringop.utils.NumbersUtils.toFixed
@@ -19,6 +21,8 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.sounds.SoundEvents
 
 object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7 boss fight.") {
+    private val titleMode by DropdownSetting("Title Mode", 0, listOf("Titles", "Draw"))
+        .withDescription("Titles: Minecraft titles, Draw: Rendered text on screen")
     private val crystalTitles by ToggleSetting("Crystal Titles")
     private val witherTitles by ToggleSetting("Wither Titles")
     private val lightningTimer by ToggleSetting("Lightning Timer")
@@ -47,9 +51,9 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
         register<ChatMessageEvent> {
             if (dungeonFloorNumber != 7 || !inBoss || !witherTitles.value) return@register
             when (event.unformattedText) {
-                "[BOSS] Maxor: YOU TRICKED ME!", "[BOSS] Maxor: THAT BEAM! IT HURTS! IT HURTS!!" -> ChatUtils.showTitle("&dMaxor Stunned!")
-                "[BOSS] Storm: Oof", "[BOSS] Storm: Ouch, that hurt!" -> ChatUtils.showTitle("&bStorm Crushed!")
-                "[BOSS] Storm: I should have known that I stood no chance." -> ChatUtils.showTitle("&bStorm Dead!")
+                "[BOSS] Maxor: YOU TRICKED ME!", "[BOSS] Maxor: THAT BEAM! IT HURTS! IT HURTS!!" -> showTitle("&dMaxor Stunned!")
+                "[BOSS] Storm: Oof", "[BOSS] Storm: Ouch, that hurt!" -> showTitle("&bStorm Crushed!")
+                "[BOSS] Storm: I should have known that I stood no chance." -> showTitle("&bStorm Dead!")
                 "[BOSS] Necron: ARGH!" -> necronStart = true
                 "The Core entrance is opening!" -> goldorStart = true
             }
@@ -71,7 +75,7 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
 
                         crystalRegex.find(text)?.destructured?.let { (min, max) ->
                             val progress = formatProgress(min.toInt(), max.toInt())
-                            ChatUtils.showTitle("&3Crystal&r($progress)")
+                            showTitle("&3Crystal&r($progress)")
                             event.isCanceled = true
                             return@register
                         }
@@ -86,7 +90,7 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
                             "Maxor" -> "&5"
                             else -> ""
                         }
-                        ChatUtils.showTitle("$color$text")
+                        showTitle("$color$text")
                         event.isCanceled = true
                     }
                 }
@@ -116,15 +120,15 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
 
             if (name.contains("Maxor") && !maxorDead && DungeonListener.currentTime - entry > 120) {
                 maxorDead = true
-                ChatUtils.showTitle("&dMaxor Dead!")
+                showTitle("&dMaxor Dead!")
             }
             else if (name.contains("Goldor") && !goldorDead && goldorStart) {
                 goldorDead = true
-                ChatUtils.showTitle("&7Goldor Dead!")
+                showTitle("&7Goldor Dead!")
             }
             else if (name.contains("Necron") && !necronDead && necronStart) {
                 necronDead = true
-                ChatUtils.showTitle("&cNecron Dead!!")
+                showTitle("&cNecron Dead!!")
             }
         }
     }
@@ -135,7 +139,7 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
 
         if (timeLeft <= 0) {
             this.listener.unregister()
-            ChatUtils.showTitle("&aStorm's Lightning Ended!")
+            showTitle("&aStorm's Lightning Ended!")
             return@register
         }
 
@@ -150,6 +154,13 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
             scale = 3f
         )
     }.unregister()
+
+    private fun showTitle(text: String) {
+        when (titleMode.value) {
+            0 -> ChatUtils.showTitle(text)
+            1 -> ChatUtils.showTitle(text)
+        }
+    }
 
     private fun formatProgress(current: Int, max: Int): String {
         val minColor = if (current == max) "&b" else "&c"
