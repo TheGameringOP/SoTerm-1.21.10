@@ -25,13 +25,20 @@ import java.awt.Color
 
 object SpringBoots : Feature("Spring Boots Display") {
     
-    private val show2DHud by ToggleSetting("Show 2D HUD", true)
+    private val show2DHud by ToggleSetting("Draw Height", true)
         .withDescription("Shows jump height as text on screen")
-    private val show3DBox by ToggleSetting("Show 3D Box", true)
+    private val textColor by ColorSetting("Text Color", Color.WHITE, false)
+        .withDescription("Color of the height text")
+        .showIf { show2DHud.value }
+        
+    private val show3DBox by ToggleSetting("Draw Box", true)
         .withDescription("Shows a 3D box above your head at jump height")
     
     private val boxColor by ColorSetting("Box Color", Color.GREEN, false)
         .withDescription("Color of the 3D box")
+        .showIf { show3DBox.value }
+    private val mode by DropdownSetting("Render Mode", 1, listOf("Fill", "Outline", "Filled Outline"))
+        .withDescription("Choose how to render the box which will appear above you.")
         .showIf { show3DBox.value }
     private val boxOutline by ToggleSetting("Box Outline", true)
         .withDescription("Show box outline")
@@ -42,10 +49,6 @@ object SpringBoots : Feature("Spring Boots Display") {
     private val boxPhase by ToggleSetting("See Through Walls", true)
         .withDescription("Box visible through walls")
         .showIf { show3DBox.value }
-    
-    private val textColor by ColorSetting("Text Color", Color.WHITE, false)
-        .withDescription("Color of the height text")
-        .showIf { show2DHud.value }
     
     private val pitchSet = setOf(0.82539684f, 0.8888889f, 0.93650794f, 1.0476191f, 1.1746032f, 1.3174603f, 1.7777778f)
     private var blockAmount = 0f
@@ -73,7 +76,7 @@ object SpringBoots : Feature("Spring Boots Display") {
         val displayAmount = if (demo) 33.0f else blockAmount
         if (displayAmount <= 0f && !demo) return@hudElement 0f to 0f
         
-        val text = "§l${String.format("%.1f", displayAmount)} blocks"
+        val text = "§4§lHeight: §a$l{String.format("%.1f", displayAmount)}"
         Render2D.drawString(context, text, 0, 0, textColor.value)
         
         return@hudElement text.width().toFloat() to 9f
@@ -128,17 +131,17 @@ object SpringBoots : Feature("Spring Boots Display") {
             
             Render3D.renderBox(
                 ctx = event.ctx,
-                x = pos.x,
-                y = pos.y,
-                z = pos.z,
-                width = 1.0,
-                height = blockAmount.toDouble(),
-                outlineColor = boxColor.value,
-                fillColor = boxColor.value,
-                outline = boxOutline.value,
-                fill = boxFill.value,
+                x = renderX,
+                y = renderY,
+                z = renderZ,
+                width = width,
+                height = height,
+                outlineColor = boxColor,
+                fillColor = boxColor.withAlpha(50),
+                outline = mode.value.equalsOneOf(1, 2),
+                fill = mode.value.equalsOneOf(0, 2),
                 phase = boxPhase.value
-            )
+                )
         }
     }
 }
