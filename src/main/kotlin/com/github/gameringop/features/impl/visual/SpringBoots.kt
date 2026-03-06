@@ -130,7 +130,7 @@ object SpringBoots : Feature("Spring Boots Display") {
                 z = pox.z,
                 width = 1.0,
                 height = 1.0,
-                outlineColor = boxColor,
+                outlineColor = boxColor.value,
                 fillColor = boxColor.withAlpha(50),
                 outline = mode.value.equalsOneOf(1, 2),
                 fill = mode.value.equalsOneOf(0, 2),
