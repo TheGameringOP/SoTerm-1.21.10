@@ -133,43 +133,38 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
             }
         }
     }
-
+    
     private val timerRenderer = EventBus.register<RenderOverlayEvent> {
         if (!enabled) return@register
-        if (titleMode.value != 0) return@register
         val timeLeft = (timerTime - DungeonListener.currentTime) / 20.0
-
+    
         if (timeLeft <= 0) {
             this.listener.unregister()
-            if (titleMode.value == 0) {
-                ChatUtils.showTitle("&aStorm's Lightning Ended!")
-            }
+            showTitle("&aStorm's Lightning Ended!")
             return@register
         }
-
-        val width = mc.window.guiScaledWidth
-        val height = mc.window.guiScaledHeight
-
-        Render2D.drawCenteredString(
-            event.context,
-            "&l&c${timeLeft.toFixed(1)}",
-            width / 2f,
-            height / 2f - height / 13f,
-            scale = 3f
-        )
-    }.unregister()
-
-    private fun showTitle(text: String) {
+    
         when (titleMode.value) {
             0 -> {
-                ChatUtils.showTitle(text)
-                mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
+                val width = mc.window.guiScaledWidth
+                val height = mc.window.guiScaledHeight
+                Render2D.drawCenteredString(
+                    event.context,
+                    "&l&c${timeLeft.toFixed(1)}",
+                    width / 2f,
+                    height / 2f - height / 13f,
+                    scale = 3f
+                )
             }
             1 -> {
-                ChatUtils.showTitle(text)
-                mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
+                ChatUtils.showTitle("&l&c${timeLeft.toFixed(1)}")
             }
         }
+    }
+
+    private fun showTitle(text: String) {
+        ChatUtils.showTitle(text)
+        mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
     }
 
     private fun formatProgress(current: Int, max: Int): String {
