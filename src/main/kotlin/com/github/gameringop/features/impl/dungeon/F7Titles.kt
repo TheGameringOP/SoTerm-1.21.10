@@ -16,16 +16,18 @@ import com.github.gameringop.utils.location.LocationUtils.dungeonFloorNumber
 import com.github.gameringop.utils.location.LocationUtils.inBoss
 import com.github.gameringop.utils.render.Render2D
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.sounds.SoundEvents
 
 object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7 boss fight.") {
-    private val titleMode by DropdownSetting("Title Mode", 0, listOf("Titles", "Draw"))
-        .withDescription("Titles: Minecraft titles, Draw: Rendered text on screen")
     private val crystalTitles by ToggleSetting("Crystal Titles")
     private val witherTitles by ToggleSetting("Wither Titles")
     private val lightningTimer by ToggleSetting("Lightning Timer")
+    
+    private val titleMode by DropdownSetting("Title Mode", 0, listOf("Titles", "Draw"))
+        .withDescription("Titles: Minecraft titles, Draw: Rendered text on screen (like Room Alerts)")
 
     private val crystalRegex = Regex("^(\\d)/(\\d) Energy Crystals are now active!$")
     private val enragedRegex = Regex("^⚠ (\\w+) is enraged! ⚠$")
@@ -157,8 +159,14 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
 
     private fun showTitle(text: String) {
         when (titleMode.value) {
-            0 -> ChatUtils.showTitle(text)
-            1 -> ChatUtils.showTitle(text)
+            0 -> {
+                mc.player?.connection?.sendChat("")
+                mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
+            }
+            1 -> {
+                ChatUtils.showTitle(text)
+                mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
+            }
         }
     }
 
