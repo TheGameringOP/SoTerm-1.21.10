@@ -26,7 +26,7 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
     private val lightningTimer by ToggleSetting("Lightning Timer")
     
     private val titleMode by DropdownSetting("Title Mode", 0, listOf("Draw", "Titles"))
-        .withDescription("Draw: Original F7 Titles, Titles: Room Alerts style")
+        .withDescription("Draw: Original F7 Titles (with lightning timer), Titles: Simple text popup")
 
     private val crystalRegex = Regex("^(\\d)/(\\d) Energy Crystals are now active!$")
     private val enragedRegex = Regex("^⚠ (\\w+) is enraged! ⚠$")
@@ -136,11 +136,14 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
 
     private val timerRenderer = EventBus.register<RenderOverlayEvent> {
         if (!enabled) return@register
+        if (titleMode.value != 0) return@register
         val timeLeft = (timerTime - DungeonListener.currentTime) / 20.0
 
         if (timeLeft <= 0) {
             this.listener.unregister()
-            showTitle("&aStorm's Lightning Ended!")
+            if (titleMode.value == 0) {
+                ChatUtils.showTitle("&aStorm's Lightning Ended!")
+            }
             return@register
         }
 
