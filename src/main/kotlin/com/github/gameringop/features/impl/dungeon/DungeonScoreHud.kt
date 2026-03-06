@@ -344,12 +344,12 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun getSpeedDeduction(percentage: Float): Float {
         var percentageOver = percentage
         var deduction = 0f
-        private val requiredSecretPercentage = mapOf(
+        val requiredSecretPercentage = mapOf(
             "E" to 0.3, "F1" to 0.3, "F2" to 0.4, "F3" to 0.5, "F4" to 0.6,
             "F5" to 0.7, "F6" to 0.85, "F7" to 1.0, "M1" to 1.0, "M2" to 1.0,
             "M3" to 1.0, "M4" to 1.0, "M5" to 1.0, "M6" to 1.0, "M7" to 1.0
         )
-        private val timeLimit = mapOf(
+        val timeLimit = mapOf(
             "E" to 600, "F1" to 600, "F2" to 600, "F3" to 600, "F4" to 720,
             "F5" to 600, "F6" to 720, "F7" to 840, "M1" to 480, "M2" to 480,
             "M3" to 480, "M4" to 480, "M5" to 480, "M6" to 600, "M7" to 840
