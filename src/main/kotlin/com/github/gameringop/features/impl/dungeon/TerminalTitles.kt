@@ -16,6 +16,7 @@ import com.github.gameringop.ui.hud.HudElement
 import com.github.gameringop.utils.ChatUtils
 import com.github.gameringop.utils.ChatUtils.unformattedText
 import com.github.gameringop.utils.ColorUtils
+import com.github.gameringop.utils.dungeons.DungeonListener
 import com.github.gameringop.utils.dungeons.DungeonPlayer
 import com.github.gameringop.utils.location.LocationUtils
 import com.github.gameringop.utils.render.Render2D
@@ -132,7 +133,7 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
             0 -> ChatUtils.showTitle(subtitle = text)
             1 -> {
                 titleStr = text
-                activeTitle = ActiveTitle(text, DungeonListener.currentTime + (duration.value * 20).toLong())
+                activeTitle = ActiveTitle(text, DungeonListener.currentTime + (duration.value * 20.0).toLong())
                 timer = (duration.value * 1000).toInt()
                 tickListener.register()
             }
