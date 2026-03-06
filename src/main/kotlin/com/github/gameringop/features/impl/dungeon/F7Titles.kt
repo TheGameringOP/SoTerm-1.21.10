@@ -16,7 +16,6 @@ import com.github.gameringop.utils.location.LocationUtils.dungeonFloorNumber
 import com.github.gameringop.utils.location.LocationUtils.inBoss
 import com.github.gameringop.utils.render.Render2D
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.sounds.SoundEvents
@@ -26,8 +25,8 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
     private val witherTitles by ToggleSetting("Wither Titles")
     private val lightningTimer by ToggleSetting("Lightning Timer")
     
-    private val titleMode by DropdownSetting("Title Mode", 0, listOf("Titles", "Draw"))
-        .withDescription("Titles: Minecraft titles, Draw: Rendered text on screen (like Room Alerts)")
+    private val titleMode by DropdownSetting("Title Mode", 0, listOf("Draw", "Titles"))
+        .withDescription("Draw: Original F7 Titles, Titles: Room Alerts style")
 
     private val crystalRegex = Regex("^(\\d)/(\\d) Energy Crystals are now active!$")
     private val enragedRegex = Regex("^⚠ (\\w+) is enraged! ⚠$")
@@ -160,7 +159,7 @@ object F7Titles: Feature(name = "F7 Titles", description = "Custom Titles for F7
     private fun showTitle(text: String) {
         when (titleMode.value) {
             0 -> {
-                mc.player?.connection?.sendChat("")
+                ChatUtils.showTitle(text)
                 mc.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f))
             }
             1 -> {
