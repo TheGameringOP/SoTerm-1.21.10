@@ -23,15 +23,15 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.EquipmentSlot
 import java.awt.Color
 
-object SpringBoots : Feature("Spring Boots 3D Display") {
+object SpringBoots : Feature("Spring Boots Display") {
     
-    private val enabled by ToggleSetting("Enabled", true)
+    private val modEnabled by ToggleSetting("Enabled", true).section("Main")
     private val show2DHud by ToggleSetting("Show 2D HUD", true)
         .withDescription("Shows jump height as text on screen")
     private val show3DBox by ToggleSetting("Show 3D Box", true)
         .withDescription("Shows a 3D box above your head at jump height")
     
-    private val boxColor by ColorSetting("Box Color", Color.GREEN, false)
+    private val boxColor by ColorSetting("Box Color", Color.CYAN, false)
         .withDescription("Color of the 3D box")
         .showIf { show3DBox.value }
     private val boxOutline by ToggleSetting("Box Outline", true)
@@ -46,7 +46,7 @@ object SpringBoots : Feature("Spring Boots 3D Display") {
     
     private val textColor by ColorSetting("Text Color", Color.WHITE, false)
         .withDescription("Color of the height text")
-        .showIf { show2DHub.value }
+        .showIf { show2DHud.value }
     
     private val pitchSet = setOf(0.82539684f, 0.8888889f, 0.93650794f, 1.0476191f, 1.1746032f, 1.3174603f, 1.7777778f)
     private var blockAmount = 0f
@@ -68,21 +68,21 @@ object SpringBoots : Feature("Spring Boots 3D Display") {
     
     private val hud by hudElement(
         name = "Spring Boots Height",
-        enabled = { enabled.value && show2DHud.value && LocationUtils.inSkyblock },
+        enabled = { modEnabled.value && show2DHud.value && LocationUtils.inSkyblock },
         shouldDraw = { true }
-    ) { ctx, demo ->
+    ) { context, demo ->
         val displayAmount = if (demo) 33.0f else blockAmount
         if (displayAmount <= 0f && !demo) return@hudElement 0f to 0f
         
         val text = "§l${String.format("%.1f", displayAmount)} blocks"
-        Render2D.drawString(ctx, text, 0, 0, textColor.value)
+        Render2D.drawString(context, text, 0, 0, textColor.value)
         
         return@hudElement text.width().toFloat() to 9f
     }
     
     override fun init() {
         register<MainThreadPacketReceivedEvent.Pre> {
-            if (!enabled.value || !LocationUtils.inSkyblock) return@register
+            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
             if (event.packet !is ClientboundSoundPacket) return@register
             val player = mc.player ?: return@register
             
@@ -109,7 +109,7 @@ object SpringBoots : Feature("Spring Boots 3D Display") {
         }
         
         register<TickEvent.End> {
-            if (!enabled.value || !LocationUtils.inSkyblock) return@register
+            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
             val player = mc.player ?: return@register
             
             if (!player.isCrouching || !isWearingSpringBoots()) {
@@ -120,11 +120,9 @@ object SpringBoots : Feature("Spring Boots 3D Display") {
         }
         
         register<RenderWorldEvent> {
-            if (!enabled.value || !LocationUtils.inSkyblock) return@register
+            if (!modEnabled.value || !LocationUtils.inSkyblock) return@register
             if (!show3DBox.value) return@register
             if (blockAmount == 0f) return@register
-            
-            lastBlockAmount = blockAmount
             
             val player = mc.player ?: return@register
             val pos = player.renderVec
