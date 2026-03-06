@@ -40,12 +40,6 @@ object SpringBoots : Feature("Spring Boots Display") {
     private val mode by DropdownSetting("Render Mode", 1, listOf("Fill", "Outline", "Filled Outline"))
         .withDescription("Choose how to render the box which will appear above you.")
         .showIf { show3DBox.value }
-    private val boxOutline by ToggleSetting("Box Outline", true)
-        .withDescription("Show box outline")
-        .showIf { show3DBox.value }
-    private val boxFill by ToggleSetting("Box Fill", false)
-        .withDescription("Fill the box with color")
-        .showIf { show3DBox.value }
     private val boxPhase by ToggleSetting("See Through Walls", true)
         .withDescription("Box visible through walls")
         .showIf { show3DBox.value }
