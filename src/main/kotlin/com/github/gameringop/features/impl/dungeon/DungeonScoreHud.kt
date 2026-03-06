@@ -316,7 +316,7 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     private fun calculateSpeedScore(): Int {
         val secondsElapsed = ScoreCalculation.secondsElapsed
         val currentFloor = LocationUtils.dungeonFloor ?: "F7"
-        
+        val limit = timeLimit[currentFloor] ?: 100
         
         return if (secondsElapsed <= limit) 100 else (100 - getSpeedDeduction(((secondsElapsed - limit) * 100f / limit))).toInt().coerceAtLeast(0)
     }
