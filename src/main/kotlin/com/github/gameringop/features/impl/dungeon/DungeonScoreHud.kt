@@ -315,39 +315,10 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
     
     private fun calculateSpeedScore(): Int {
         val secondsElapsed = ScoreCalculation.secondsElapsed
-        val floor = LocationUtils.dungeonFloor ?: "F7"
+        val currentFloor = LocationUtils.dungeonFloor ?: "F7"
         
-        val timeLimit = when (floor) {
-            "E", "F1", "F2", "F3", "F5" -> 600
-            "F4", "F6" -> 720
-            "F7" -> 840
-            "M1", "M2", "M3", "M4", "M5" -> 480
-            "M6" -> 600
-            "M7" -> 840
-            else -> 600
-        }
         
-        val totalElapsed = secondsElapsed + 480 - timeLimit
-        
-        return if (LocationUtils.dungeonFloor == "E") {
-            when {
-                totalElapsed < 492 -> 70
-                totalElapsed < 600 -> (140 - totalElapsed / 12.0).toInt()
-                totalElapsed < 840 -> (115 - totalElapsed / 24.0).toInt()
-                totalElapsed < 1140 -> (108 - totalElapsed / 30.0).toInt()
-                totalElapsed < 3570 -> (98.5 - totalElapsed / 40.0).toInt()
-                else -> 0
-            }
-        } else {
-            when {
-                totalElapsed < 480 -> 100
-                totalElapsed < 600 -> (140 - totalElapsed / 12.0).toInt()
-                totalElapsed < 840 -> (115 - totalElapsed / 24.0).toInt()
-                totalElapsed < 1140 -> (108 - totalElapsed / 30.0).toInt()
-                totalElapsed < 3570 -> (98.5 - totalElapsed / 40.0).toInt()
-                else -> 0
-            }
-        }
+        return if (secondsElapsed <= limit) 100 else (100 - getSpeedDeduction(((secondsElapsed - limit) * 100f / limit))).toInt().coerceAtLeast(0)
     }
     
     private fun calculateBonusScore(): Int {
@@ -368,6 +339,36 @@ object DungeonScoreHud : Feature("Dungeon Score HUD") {
             score >= 0 -> "§cD"
             else -> "§8F"
         }
+    }
+
+    private fun getSpeedDeduction(percentage: Float): Float {
+        var percentageOver = percentage
+        var deduction = 0f
+        private val requiredSecretPercentage = mapOf(
+            "E" to 0.3, "F1" to 0.3, "F2" to 0.4, "F3" to 0.5, "F4" to 0.6,
+            "F5" to 0.7, "F6" to 0.85, "F7" to 1.0, "M1" to 1.0, "M2" to 1.0,
+            "M3" to 1.0, "M4" to 1.0, "M5" to 1.0, "M6" to 1.0, "M7" to 1.0
+        )
+        private val timeLimit = mapOf(
+            "E" to 600, "F1" to 600, "F2" to 600, "F3" to 600, "F4" to 720,
+            "F5" to 600, "F6" to 720, "F7" to 840, "M1" to 480, "M2" to 480,
+            "M3" to 480, "M4" to 480, "M5" to 480, "M6" to 600, "M7" to 840
+        )
+
+        fun dedu(cap: Float, div: Float) {
+            if (percentageOver <= 0) return
+            deduction += (percentageOver.coerceAtMost(cap) / div)
+            percentageOver -= cap
+        }
+
+        dedu(20f, 2f)
+        dedu(20f, 3.5f)
+        dedu(10f, 4f)
+        dedu(10f, 5f)
+
+        if (percentageOver > 0) deduction += (percentageOver / 6f)
+
+        return deduction
     }
     
     override fun init() {
