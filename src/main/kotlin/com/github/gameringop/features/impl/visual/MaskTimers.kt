@@ -3,7 +3,7 @@ package com.github.gameringop.features.impl.visual
 import com.github.gameringop.event.impl.ChatMessageEvent
 import com.github.gameringop.event.impl.RenderOverlayEvent
 import com.github.gameringop.event.impl.TickEvent
-import com.gameringop.event.impl.WorldChangeEvent
+import com.github.gameringop.event.impl.WorldChangeEvent
 import com.github.gameringop.features.Feature
 import com.github.gameringop.ui.clickgui.components.getValue
 import com.github.gameringop.ui.clickgui.components.impl.DropdownSetting
