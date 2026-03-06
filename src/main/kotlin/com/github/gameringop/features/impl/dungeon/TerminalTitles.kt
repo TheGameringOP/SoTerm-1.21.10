@@ -86,10 +86,10 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
             if (gateTitles.value) when (title) {
                 "The gate has been destroyed!" -> {
                     gateDestroyed = true
-                    checkPhaseComplete()
                     if (!(completedTerminals >= totalTerminals && gateDestroyed)) {
                         showTitle("&cGate Destroyed!")
                     }
+                    checkPhaseComplete()
                     event.isCanceled = true
                     return@register
                 }
@@ -127,7 +127,6 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
     }
 
     private fun handleTitle(name: String, type: String, min: Int, max: Int): String {
-        val color = ColorUtils.colorCodeByPercent(min, max)
         if (phaseDone.value && min == max) return "&a&lPhase Done!"
         val brackets = when (bracket.value) {
             0 -> listOf("(", ")")
@@ -147,9 +146,9 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
         val formattedName = (DungeonPlayer.get(name)?.clazz?.code ?: "&7") + name
 
         return when (mode.value) {
-            0 -> "$formattedName $formattedType &f${brackets[0]}$color$min&8/&a$max&f${brackets[1]}"
-            1 -> "$formattedType &f${brackets[0]}$color$min&f/&a$max&f${brackets[1]}"
-            2 -> "&f${brackets[0]}$color$min&f/&a$max&f${brackets[1]}"
+            0 -> "$formattedName $formattedType &a${brackets[0]}$c$min&a/&a$max&a${brackets[1]}"
+            1 -> "$formattedType &a${brackets[0]}$c$min&a/&a$max&a${brackets[1]}"
+            2 -> "&a${brackets[0]}$c$min&a/&a$max&a${brackets[1]}"
             else -> ""
         }
     }
