@@ -35,12 +35,11 @@ object SpringBoots : Feature("Spring Boots Display") {
         
     private val show3DBox by ToggleSetting("Draw Box", true)
         .withDescription("Shows a 3D box above your head at jump height")
-    
-    private val boxColor by ColorSetting("Box Color", Color.GREEN, false)
-        .withDescription("Color of the 3D box")
-        .showIf { show3DBox.value }
     private val mode by DropdownSetting("Render Mode", 1, listOf("Fill", "Outline", "Filled Outline"))
         .withDescription("Choose how to render the box which will appear above you.")
+        .showIf { show3DBox.value }
+    private val boxColor by ColorSetting("Box Color", Color.GREEN, false)
+        .withDescription("Color of the 3D box")
         .showIf { show3DBox.value }
     private val boxPhase by ToggleSetting("See Through Walls", true)
         .withDescription("Box visible through walls")
