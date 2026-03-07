@@ -9,13 +9,8 @@ import com.github.gameringop.ui.clickgui.components.impl.TextInputSetting
 import com.github.gameringop.ui.clickgui.components.provideDelegate
 import com.github.gameringop.ui.clickgui.components.withDescription
 import com.github.gameringop.utils.ChatUtils
-import com.github.gameringop.utils.dungeons.DungeonListener
 import com.google.gson.Gson
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -72,368 +67,138 @@ object HypixelAPI : Feature("Hypixel API Integration") {
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
+        .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
         .build()
     
     private val uuidCache = ConcurrentHashMap<String, String>()
     private val uuidPendingRequests = ConcurrentHashMap<String, Long>()
-    
     private val spiritCache = ConcurrentHashMap<String, Boolean>()
-    private val spiritPendingRequests = ConcurrentHashMap<String, Long>()
     private val assumedSpirit = ConcurrentHashMap<String, Boolean>()
     
-    data class HypixelKeyResponse(
-        val success: Boolean,
-        val cause: String? = null,
-        val record: KeyRecord? = null
-    )
-    
-    data class KeyRecord(
-        val key: String,
-        val owner: String,
-        val limit: Int,
-        val queriesInPastMin: Int,
-        val totalQueries: Int
-    )
-    
-    data class HypixelProfile(
-        val success: Boolean,
-        val cause: String? = null,
-        val player: PlayerData? = null
-    )
-    
-    data class PlayerData(
-        val displayname: String,
-        val uuid: String
-    )
-    
-    data class SkyblockProfiles(
-        val success: Boolean,
-        val cause: String? = null,
-        val profiles: List<Profile>? = null
-    )
-    
-    data class Profile(
-        val profile_id: String,
-        val cute_name: String,
-        val selected: Boolean,
-        val members: Map<String, Member>
-    )
-    
-    data class Member(
-        val pets_data: PetsData? = null
-    )
-    
-    data class PetsData(
-        val pets: List<Pet>? = null
-    )
-    
-    data class Pet(
-        val type: String,
-        val tier: String,
-        val heldItem: String? = null
-    ) {
-        val isSpirit: Boolean
-            get() = type.equals("SPIRIT", ignoreCase = true) && 
-                    (tier.equals("LEGENDARY", ignoreCase = true) || 
-                     (tier.equals("EPIC", ignoreCase = true) && heldItem == "PET_ITEM_TIER_BOOST"))
+    data class SkyblockProfiles(val success: Boolean, val cause: String?, val profiles: List<Profile>?)
+    data class Profile(val profile_id: String, val selected: Boolean, val members: Map<String, Member>)
+    data class Member(val pets_data: PetsData?)
+    data class PetsData(val pets: List<Pet>?)
+    data class Pet(val type: String, val tier: String, val heldItem: String? = null) {
+        val isSpirit: Boolean get() = type.equals("SPIRIT", ignoreCase = true) && 
+            (tier.equals("LEGENDARY", ignoreCase = true) || (tier.equals("EPIC", ignoreCase = true) && heldItem == "PET_ITEM_TIER_BOOST"))
     }
-    
+
     private fun testApiKey() {
         if (apiKey.value.isBlank()) {
             ChatUtils.modMessage("§cPlease enter an API key first!")
             return
         }
-        
         Thread {
             try {
-                val url = "https://api.hypixel.net/v2/player?name=Hypixel"
-                
-                if (SoTerm.debugFlags.contains("link")) {
-                    ChatUtils.modMessage("§7Request URL: $url")
-                    ChatUtils.modMessage("§7API Key: ${apiKey.value.take(8)}...${apiKey.value.takeLast(4)}")
-                }
-                
                 val request = Request.Builder()
-                    .url(url)
-                    .header("API-Key", apiKey.value)
+                    .url("https://api.hypixel.net/v2/player?name=Hypixel")
+                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .addHeader("API-Key", apiKey.value)
                     .build()
                 
                 client.newCall(request).execute().use { response ->
-                    val responseBody = response.body?.string() ?: ""
+                    val body = response.body?.string() ?: ""
+                    val json = try { gson.fromJson(body, Map::class.java) } catch (e: Exception) { null }
+                    val cause = json?.get("cause") as? String ?: ""
                     
-                    if (SoTerm.debugFlags.contains("link")) {
-                        ChatUtils.modMessage("§7Response code: ${response.code}")
-                    }
-                    
-                    if (responseBody.trimStart().startsWith("<")) {
-                        if (SoTerm.debugFlags.contains("link")) {
-                            ChatUtils.modMessage("§cReceived HTML instead of JSON")
-                            ChatUtils.modMessage("§7First 200 chars: ${responseBody.take(200)}")
-                        }
-                        return@use
-                    }
-                    
-                    val jsonResponse = try {
-                        gson.fromJson(responseBody, Map::class.java)
-                    } catch (e: Exception) {
-                        if (SoTerm.debugFlags.contains("link")) {
-                            ChatUtils.modMessage("§cFailed to parse JSON response")
-                            ChatUtils.modMessage("§7Raw response: ${responseBody.take(200)}")
-                        }
-                        return@use
-                    }
-                    
-                    val cause = jsonResponse["cause"] as? String ?: ""
-                    if (cause.contains("You have already looked up this name recently")) {
-                        ChatUtils.modMessage("§aAPI key is valid! (Rate limited - key works)")
-                        return@use
-                    }
-                    
-                    if (response.isSuccessful && jsonResponse["success"] == true) {
+                    if (response.isSuccessful || cause.contains("recently")) {
                         ChatUtils.modMessage("§aAPI key is valid!")
                     } else {
-                        ChatUtils.modMessage("§cAPI key is invalid! $cause")
+                        ChatUtils.modMessage("§cAPI key invalid! (Code: ${response.code}) $cause")
                     }
                 }
             } catch (e: Exception) {
-                ChatUtils.modMessage("§cFailed to test API key: ${e.message}")
-                if (SoTerm.debugFlags.contains("link")) {
-                    e.printStackTrace()
-                }
+                ChatUtils.modMessage("§cTest failed: ${e.message}")
             }
         }.start()
     }
-    
+
     private fun checkSpecificPlayer(username: String) {
+        ChatUtils.modMessage("§eChecking §f$username§e...")
+        checkSpiritPetAsync(username) { hasSpirit ->
+            if (hasSpirit) ChatUtils.modMessage("§a$username has a Legendary Spirit pet!")
+            else ChatUtils.modMessage("§c$username does NOT have a Legendary Spirit pet")
+        }
+    }
+
+    fun checkSpiritPetAsync(username: String, callback: (Boolean) -> Unit) {
         if (apiKey.value.isBlank()) {
-            ChatUtils.modMessage("§cPlease enter an API key first!")
+            spiritCache[username] = true
+            assumedSpirit[username] = true
+            callback(true)
             return
         }
-        
-        ChatUtils.modMessage("§eChecking Spirit pet for §f$username§e...")
-        
+
+        spiritCache[username]?.let {
+            callback(it)
+            return
+        }
+
         Thread {
-            try {
-                val uuid = getUUIDFromUsername(username) ?: run {
-                    ChatUtils.modMessage("§cFailed to get UUID for $username")
-                    return@Thread
-                }
-                
-                val url = "https://api.hypixel.net/v2/skyblock/profiles?uuid=$uuid"
-                
-                if (SoTerm.debugFlags.contains("link")) {
-                    ChatUtils.modMessage("§7Request URL: $url")
-                }
-                
-                val request = Request.Builder()
-                    .url(url)
-                    .header("API-Key", apiKey.value)
-                    .build()
-                
-                client.newCall(request).execute().use { response ->
-                    val responseBody = response.body?.string() ?: ""
-                    
-                    if (!response.isSuccessful) {
-                        ChatUtils.modMessage("§cAPI request failed: ${response.code}")
-                        if (SoTerm.debugFlags.contains("link")) {
-                            ChatUtils.modMessage("§7Response body: ${responseBody.take(500)}")
-                        }
-                        return@use
-                    }
-                    
-                    val profilesResponse = try {
-                        gson.fromJson(responseBody, SkyblockProfiles::class.java)
-                    } catch (e: Exception) {
-                        ChatUtils.modMessage("§cFailed to parse JSON response")
-                        if (SoTerm.debugFlags.contains("link")) {
-                            ChatUtils.modMessage("§7Raw response: ${responseBody.take(500)}")
-                        }
-                        return@use
-                    }
-                    
-                    if (!profilesResponse.success) {
-                        ChatUtils.modMessage("§cAPI error: ${profilesResponse.cause}")
-                        return@use
-                    }
-                    
-                    val selectedProfile = profilesResponse.profiles?.find { it.selected }
-                    
-                    if (selectedProfile == null) {
-                        ChatUtils.modMessage("§cNo selected profile found for $username")
-                        return@use
-                    }
-                    
-                    val member = selectedProfile.members[uuid]
-                    val hasSpirit = member?.pets_data?.pets?.any { it.isSpirit } ?: false
-                    
-                    if (hasSpirit) {
-                        ChatUtils.modMessage("§a$username has a Legendary Spirit pet! §7(§6Spirit§7)")
-                    } else {
-                        ChatUtils.modMessage("§c$username does NOT have a Legendary Spirit pet")
-                    }
-                    
-                    spiritCache[username] = hasSpirit
-                }
-            } catch (e: Exception) {
-                ChatUtils.modMessage("§cFailed to check Spirit pet: ${e.message}")
-                if (SoTerm.debugFlags.contains("link")) {
-                    e.printStackTrace()
-                }
+            val uuid = getUUIDFromUsername(username) ?: run {
+                spiritCache[username] = true
+                assumedSpirit[username] = true
+                callback(true)
+                return@Thread
             }
+
+            val request = Request.Builder()
+                .url("https://api.hypixel.net/v2/skyblock/profiles?uuid=$uuid")
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                .addHeader("Accept", "application/json")
+                .addHeader("API-Key", apiKey.value)
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    spiritCache[username] = true
+                    assumedSpirit[username] = true
+                    callback(true)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!response.isSuccessful) {
+                            spiritCache[username] = true
+                            assumedSpirit[username] = true
+                            callback(true)
+                            return
+                        }
+                        val body = response.body?.string() ?: ""
+                        val data = try { gson.fromJson(body, SkyblockProfiles::class.java) } catch (e: Exception) { null }
+                        val hasSpirit = data?.profiles?.find { it.selected }?.members?.get(uuid)?.pets_data?.pets?.any { it.isSpirit } ?: false
+                        
+                        spiritCache[username] = hasSpirit
+                        callback(hasSpirit)
+                    }
+                }
+            })
         }.start()
     }
-    
+
     fun getUUIDFromUsername(username: String): String? {
         uuidCache[username]?.let { return it }
-        
-        if (uuidPendingRequests.containsKey(username)) {
-            val lastRequest = uuidPendingRequests[username] ?: 0
-            if (System.currentTimeMillis() - lastRequest < 60000) {
-                return null
-            }
-        }
-        
+        if (uuidPendingRequests.containsKey(username)) return null
         uuidPendingRequests[username] = System.currentTimeMillis()
         
-        try {
+        return try {
             val request = Request.Builder()
                 .url("https://api.mojang.com/users/profiles/minecraft/$username")
+                .addHeader("User-Agent", "Mozilla/5.0")
                 .build()
-            
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return null
-                val json = response.body?.string() ?: return null
-                val data = gson.fromJson(json, Map::class.java)
+                val data = gson.fromJson(response.body?.string(), Map::class.java)
                 val uuid = data["id"] as? String
-                
-                if (uuid != null) {
-                    uuidCache[username] = uuid
-                    return uuid
-                }
+                if (uuid != null) uuidCache[username] = uuid
+                uuid
             }
-        } catch (e: Exception) {
-            if (SoTerm.debugFlags.contains("link")) {
-                ChatUtils.modMessage("§7[Mojang API] Error: ${e.message}")
-            }
-        } finally {
-            uuidPendingRequests.remove(username)
-        }
-        
-        return null
+        } catch (e: Exception) { null }
+        finally { uuidPendingRequests.remove(username) }
     }
-    
-    fun checkSpiritPet(username: String): Boolean {
-        if (apiKey.value.isBlank()) {
-            if (SoTerm.debugFlags.contains("spirit")) {
-                ChatUtils.modMessage("§eNo API key, assuming Spirit for $username")
-            }
-            spiritCache[username] = true
-            return true
-        }
-        
-        spiritCache[username]?.let { 
-            if (SoTerm.debugFlags.contains("spirit")) {
-                ChatUtils.modMessage("§eCache hit for $username: $it")
-            }
-            return it 
-        }
-        
-        try {
-            val uuid = getUUIDFromUsername(username)
-            
-            if (uuid == null) {
-                if (SoTerm.debugFlags.contains("spirit")) {
-                    ChatUtils.modMessage("§eUUID fetch failed for $username, assuming Spirit")
-                }
-                spiritCache[username] = true
-                return true
-            }
-            
-            val url = "https://api.hypixel.net/v2/skyblock/profiles?uuid=$uuid"
-            
-            if (SoTerm.debugFlags.contains("link")) {
-                ChatUtils.modMessage("§7Request URL: $url")
-            }
-            
-            val request = Request.Builder()
-                .url(url)
-                .header("API-Key", apiKey.value)
-                .build()
-            
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string() ?: ""
-            
-            if (!response.isSuccessful) {
-                if (SoTerm.debugFlags.contains("spirit")) {
-                    ChatUtils.modMessage("§eAPI request failed (${response.code}) for $username, assuming Spirit")
-                }
-                if (SoTerm.debugFlags.contains("link")) {
-                    ChatUtils.modMessage("§7Response body: ${responseBody.take(500)}")
-                }
-                spiritCache[username] = true
-                return true
-            }
-            
-            val profilesResponse = try {
-                gson.fromJson(responseBody, SkyblockProfiles::class.java)
-            } catch (e: Exception) {
-                if (SoTerm.debugFlags.contains("spirit")) {
-                    ChatUtils.modMessage("§eJSON parse failed for $username, assuming Spirit")
-                }
-                if (SoTerm.debugFlags.contains("link")) {
-                    ChatUtils.modMessage("§7Raw response: ${responseBody.take(500)}")
-                }
-                spiritCache[username] = true
-                return true
-            }
-            
-            if (!profilesResponse.success) {
-                if (SoTerm.debugFlags.contains("spirit")) {
-                    ChatUtils.modMessage("§eAPI error (${profilesResponse.cause}) for $username, assuming Spirit")
-                }
-                spiritCache[username] = true
-                return true
-            }
-            
-            val selectedProfile = profilesResponse.profiles?.find { it.selected }
-            
-            if (selectedProfile == null) {
-                if (SoTerm.debugFlags.contains("spirit")) {
-                    ChatUtils.modMessage("§eNo selected profile for $username, assuming Spirit")
-                }
-                spiritCache[username] = true
-                return true
-            }
-            
-            val member = selectedProfile.members[uuid]
-            val hasSpirit = member?.pets_data?.pets?.any { it.isSpirit } ?: false
-            
-            if (SoTerm.debugFlags.contains("spirit")) {
-                if (hasSpirit) {
-                    ChatUtils.modMessage("§a$username has Legendary Spirit pet")
-                } else {
-                    ChatUtils.modMessage("§c$username does NOT have Legendary Spirit pet")
-                }
-            }
-            
-            spiritCache[username] = hasSpirit
-            return hasSpirit
-            
-        } catch (e: Exception) {
-            if (SoTerm.debugFlags.contains("spirit")) {
-                ChatUtils.modMessage("§eException for $username: ${e.message}, assuming Spirit")
-            }
-            if (SoTerm.debugFlags.contains("link")) {
-                e.printStackTrace()
-            }
-            spiritCache[username] = true
-            return true
-        }
-    }
-        
+
     fun getSpiritStatus(username: String): Boolean? = spiritCache[username]
-    
     fun isSpiritLoaded(username: String): Boolean = spiritCache.containsKey(username)
-    
     fun hasAssumedSpirit(username: String): Boolean = assumedSpirit[username] == true
 }
