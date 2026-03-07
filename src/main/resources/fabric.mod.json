@@ -14,17 +14,20 @@
   "license": "CC0-1.0",
   "icon": "assets/soterm/icon.png",
   "environment": "*",
-  "entrypoints": {
-    "modmenu": [
-      "com.github.gameringop.integration.SoTermModMenuIntegration"
-    ],
-    "client": [
-      {
-        "adapter": "kotlin",
-        "value": "com.github.gameringop.SoTerm"
-      }
-    ]
-  },
+"entrypoints": {
+  "modmenu": [
+    {
+      "adapter": "kotlin",
+      "value": "com.github.gameringop.ui.clickgui.ModMenuIntegration"
+    }
+  ],
+  "client": [
+    {
+      "adapter": "kotlin",
+      "value": "com.github.gameringop.SoTerm"
+    }
+  ]
+},
   "mixins": [
     "soterm.mixins.json"
   ],
