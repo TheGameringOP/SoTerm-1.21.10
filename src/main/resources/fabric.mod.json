@@ -20,8 +20,8 @@
     ],
     "client": [
       {
-        "adapter": "kotlin"
-        "value": "com.github.gameringop.SoTerm",
+        "adapter": "kotlin",
+        "value": "com.github.gameringop.SoTerm"
       }
     ]
   },
