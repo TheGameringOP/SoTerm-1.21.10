@@ -32,17 +32,8 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
     private val titleMode by DropdownSetting("Title Mode", 0, listOf("Draw", "Titles"))
         .withDescription("Draw: Original Terminal Titles, Titles: Room Alerts style")
 
-    private var completedTerminals = 0
+    private var terminalsDone = false
     private var gateDestroyed = false
-    private val totalTerminals = 7
-
-    private fun checkPhaseComplete() {
-        if (completedTerminals >= totalTerminals && gateDestroyed) {
-            showTitle("&a&lPhase Complete!")
-            completedTerminals = 0
-            gateDestroyed = false
-        }
-    }
 
     private val hud = object: HudElement() {
         override val name = "Terminal Titles"
@@ -65,10 +56,8 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
             val scaledH = height * scale
             val drawX = x - scaledW / 2
             val drawY = y
-
             val hovered = mx >= drawX && mx <= drawX + scaledW && my >= drawY && my <= drawY + scaledH
             val borderColor = if (isDragging || hovered) Style.accentColor else Color(255, 255, 255, 40)
-
             Render2D.drawRect(ctx, drawX, drawY, scaledW.toDouble(), scaledH.toDouble(), Color(10, 10, 10, 150))
             Render2D.drawRect(ctx, drawX, drawY, scaledW.toDouble(), 1.0, borderColor)
             Render2D.drawRect(ctx, drawX, drawY + scaledH - 1, scaledW.toDouble(), 1.0, borderColor)
@@ -79,37 +68,59 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
         hudElements.add(hud)
 
         register<MainThreadPacketReceivedEvent.Pre> {
-            if (!LocationUtils.inDungeon || LocationUtils.F7Phase != 3) return@register
+            if (!LocationUtils.inDungeon || LocationUtils.F7Phase != 3) {
+                terminalsDone = false
+                gateDestroyed = false
+                return@register
+            }
             if (event.packet !is ClientboundSetSubtitleTextPacket) return@register
             val title = event.packet.text.unformattedText
-
-            if (gateTitles.value) when (title) {
-                "The gate has been destroyed!" -> {
+            
+            if (gateTitles.value) {
+                if (title == "The gate has been destroyed!") {
                     gateDestroyed = true
-                    if (!(completedTerminals >= totalTerminals && gateDestroyed)) {
+                    event.isCanceled = true
+                    
+                    if (terminalsDone && phaseDone.value) {
+                        showTitle("&a&lPhase Complete!")
+                        terminalsDone = false
+                        gateDestroyed = false
+                    } else {
                         showTitle("&cGate Destroyed!")
                     }
-                    checkPhaseComplete()
-                    event.isCanceled = true
                     return@register
-                }
-                "The gate will open in 5 seconds!" -> {
+                } else if (title == "The gate will open in 5 seconds!") {
                     showTitle("&c&lGATE!")
                     event.isCanceled = true
                     return@register
                 }
             }
 
-            val (name, type, min, max) = mainRegex.find(title)?.destructured ?: return@register
-            completedTerminals++
-            checkPhaseComplete()
-            showTitle(handleTitle(name, type, min.toInt(), max.toInt()))
-            event.isCanceled = true
+            val match = mainRegex.find(title)
+            if (match != null) {
+                val (name, type, minStr, maxStr) = match.destructured
+                val min = minStr.toInt()
+                val max = maxStr.toInt()
+                
+                event.isCanceled = true
+                
+                if (min == max) {
+                    terminalsDone = true
+                    if (gateDestroyed && phaseDone.value) {
+                        showTitle("&a&lPhase Complete!")
+                        terminalsDone = false // Reset
+                        gateDestroyed = false
+                    } else {
+                        showTitle(handleTitle(name, type, min, max))
+                    }
+                } else {
+                    showTitle(handleTitle(name, type, min, max))
+                }
+            }
         }
     }
 
     private val mainRegex = Regex("(.+) (?:activated|completed) a (terminal|device|lever)! \\((\\d)/(\\d)\\)")
-
     private var titleStr = ""
     private var timer = 0
 
@@ -127,7 +138,6 @@ object TerminalTitles: Feature("Reformats the Terminal titles on P3.") {
     }
 
     private fun handleTitle(name: String, type: String, min: Int, max: Int): String {
-        if (phaseDone.value && min == max) return "&a&lPhase Done!"
         val brackets = when (bracket.value) {
             0 -> listOf("(", ")")
             1 -> listOf("[", "]")
