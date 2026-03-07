@@ -15,10 +15,13 @@
   "icon": "assets/soterm/icon.png",
   "environment": "*",
   "entrypoints": {
+    "modmenu": [
+      "com.github.gameringop.integration.SoTermModMenuIntegration"
+    ],
     "client": [
       {
-        "value": "com.github.gameringop.SoTerm",
         "adapter": "kotlin"
+        "value": "com.github.gameringop.SoTerm",
       }
     ]
   },
