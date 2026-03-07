@@ -7,6 +7,8 @@ import com.github.gameringop.ui.clickgui.components.getValue
 import com.github.gameringop.ui.clickgui.components.impl.ColorSetting
 import com.github.gameringop.ui.clickgui.components.impl.ToggleSetting
 import com.github.gameringop.ui.clickgui.components.provideDelegate
+import com.github.gameringop.ui.clickgui.components.section
+import com.github.gameringop.ui.clickgui.components.withDescription
 import com.github.gameringop.utils.MathUtils
 import com.github.gameringop.utils.dungeons.DungeonListener
 import com.github.gameringop.utils.dungeons.enums.DungeonClass
